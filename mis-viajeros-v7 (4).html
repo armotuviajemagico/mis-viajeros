@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Armo Tu Viaje Mágico — Mis Viajeros</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #faf8f5;
+  --surface:   #ffffff;
+  --border:    #e8e0d8;
+  --border2:   #d4c8bc;
+  --text:      #1e1812;
+  --text2:     #5a4e44;
+  --muted:     #9a8e84;
+  --pink:      #c4536a;
+  --pink-soft: #f5e6e9;
+  --pink-mid:  #e8b4bf;
+  --disney:    #1a5fa8;
+  --disney-bg: #e8f0fa;
+  --disney-bd: #b8d0ef;
+  --uni:       #0d7a6e;
+  --uni-bg:    #e4f5f2;
+  --uni-bd:    #8dd4cc;
+  --other:     #7a5c1a;
+  --other-bg:  #fdf2d8;
+  --other-bd:  #e8d08a;
+  --green:     #1a7a4a;
+  --green-bg:  #e4f5ec;
+  --red:       #b83232;
+  --red-bg:    #faeaea;
+  --yellow:    #8a6800;
+  --yellow-bg: #fef9e0;
+  --yellow-bd: #e8d070;
+  --orange:    #b85c00;
+  --orange-bg: #fef0e0;
+
+  --radius:    12px;
+  --radius-lg: 18px;
+  --shadow:    0 2px 16px rgba(30,24,18,.06);
+  --shadow-md: 0 4px 28px rgba(30,24,18,.1);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: 'Lora', Georgia, serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ── Header ── */
+header {
+  position: sticky; top: 0; z-index: 200;
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  padding: 0 32px;
+  display: flex; align-items: center; gap: 16px;
+  height: 68px;
+  box-shadow: 0 2px 12px rgba(30,24,18,.07);
+}
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-icon { font-size: 1.8rem; }
+.logo-text {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.25rem; font-weight: 700;
+  color: var(--text); letter-spacing: .01em;
+}
+.logo-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .62rem; color: var(--muted);
+  font-weight: 600; letter-spacing: .12em;
+  text-transform: uppercase; margin-top: 1px;
+}
+.header-right { margin-left: auto; }
+.btn-add {
+  background: var(--pink); color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600; font-size: .82rem;
+  padding: 9px 22px; border: none;
+  border-radius: 50px; cursor: pointer;
+  display: flex; align-items: center; gap: 7px;
+  box-shadow: 0 3px 12px rgba(196,83,106,.3);
+  transition: all .2s; letter-spacing: .02em;
+}
+.btn-add:hover { background: #b04460; transform: translateY(-1px); box-shadow: 0 5px 18px rgba(196,83,106,.4); }
+
+/* ── Notifications panel ── */
+.notif-panel {
+  max-width: 1100px; margin: 24px auto 0; padding: 0 24px;
+}
+.notif-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .68rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .14em;
+  color: var(--muted); margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.notif-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.notif-count-badge {
+  background: var(--pink); color: #fff;
+  font-size: .6rem; font-weight: 700;
+  padding: 2px 7px; border-radius: 20px;
+  margin-left: 2px;
+}
+/* Per-alert dismiss button */
+.notif-dismiss {
+  background: none; border: 1.5px solid transparent;
+  color: var(--muted); cursor: pointer;
+  border-radius: 50%; width: 24px; height: 24px; min-width: 24px;
+  font-size: .65rem; display: flex; align-items: center; justify-content: center;
+  transition: all .18s; flex-shrink: 0;
+  font-family: 'DM Sans', sans-serif; align-self: center;
+}
+.notif-dismiss:hover { background: var(--red-bg); border-color: #e8b0b0; color: var(--red); }
+.notif-list { display: flex; flex-direction: column; gap: 8px; }
+
+.notif {
+  border-radius: var(--radius);
+  padding: 13px 18px;
+  display: flex; align-items: flex-start; gap: 14px;
+  border: 1.5px solid transparent;
+  cursor: pointer; transition: transform .15s, box-shadow .15s;
+  box-shadow: var(--shadow);
+}
+.notif:hover { transform: translateX(3px); box-shadow: var(--shadow-md); }
+
+.notif-icon {
+  font-size: 1.1rem; margin-top: 1px; flex-shrink: 0;
+}
+.notif-body { flex: 1; }
+.notif-name {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700; font-size: .88rem; color: var(--text);
+}
+.notif-desc {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .78rem; color: var(--text2); margin-top: 2px;
+}
+.notif-badge {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .7rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 20px;
+  flex-shrink: 0; align-self: center; white-space: nowrap;
+}
+
+/* Notification types */
+.n-pay {
+  background: #fff8f9; border-color: var(--pink-mid);
+}
+.n-pay .notif-badge { background: var(--pink-soft); color: var(--pink); }
+.n-pay-urgent {
+  background: var(--red-bg); border-color: #e8b0b0;
+}
+.n-pay-urgent .notif-badge { background: var(--red-bg); color: var(--red); }
+.n-dining {
+  background: var(--uni-bg); border-color: var(--uni-bd);
+}
+.n-dining .notif-badge { background: #c0ede8; color: var(--uni); }
+.n-ll {
+  background: var(--yellow-bg); border-color: var(--yellow-bd);
+}
+.n-ll .notif-badge { background: #fbedb0; color: var(--yellow); }
+
+/* Ya habilitado — tono más marcado */
+.n-dining.n-active {
+  background: #d0f0ec; border-color: #6cc8be;
+}
+.n-dining.n-active .notif-badge { background: #a8e4de; color: #0a5c54; font-weight: 800; }
+.n-ll.n-active {
+  background: #fef3c0; border-color: #d4b800;
+}
+.n-ll.n-active .notif-badge { background: #fde878; color: #6b5000; font-weight: 800; }
+
+@keyframes pulse-border {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(184,50,50,.18); }
+  50%       { box-shadow: 0 0 0 6px rgba(184,50,50,0); }
+}
+.n-urgent-anim { animation: pulse-border 2s infinite; }
+
+/* ── Tabs ── */
+.tabs-wrap {
+  max-width: 1100px; margin: 28px auto 0;
+  padding: 0 24px; display: flex; gap: 4px;
+}
+.tab {
+  padding: 10px 28px;
+  border-radius: 10px 10px 0 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .8rem; font-weight: 600;
+  cursor: pointer; border: 1.5px solid transparent;
+  border-bottom: none;
+  background: rgba(30,24,18,.04);
+  color: var(--muted);
+  transition: all .2s; letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.tab.active {
+  background: var(--surface);
+  color: var(--pink);
+  border-color: var(--border);
+  border-bottom: 2px solid var(--surface);
+}
+.tab .badge {
+  display: inline-block; margin-left: 8px;
+  background: var(--pink-mid); color: #fff;
+  font-size: .62rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+  vertical-align: middle;
+}
+.tab.active .badge { background: var(--pink); }
+
+/* ── Panels ── */
+.panel { display: none; max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; }
+.panel.active { display: block; }
+.panel-inner {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow);
+}
+
+/* ── Stats ── */
+.stats-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.stat {
+  flex: 1; min-width: 110px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+}
+.stat-val {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.7rem; font-weight: 700;
+  color: var(--pink); line-height: 1;
+}
+.stat-lbl {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .62rem; color: var(--muted);
+  margin-top: 4px; text-transform: uppercase;
+  letter-spacing: .09em; font-weight: 600;
+}
+
+/* ── Section title ── */
+.section-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .65rem; text-transform: uppercase;
+  letter-spacing: .12em; color: var(--muted);
+  font-weight: 700; margin: 22px 0 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 1px;
+  background: linear-gradient(to right, var(--border), transparent);
+}
+
+/* ── TABLE layout ── */
+.tbl-wrap { width: 100%; overflow-x: auto; }
+.viajeros-table {
+  width: 100%; border-collapse: collapse;
+  font-family: 'DM Sans', sans-serif;
+}
+.viajeros-table thead tr {
+  border-bottom: 2px solid var(--border);
+}
+.viajeros-table th {
+  padding: 8px 12px;
+  font-size: .62rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .09em;
+  color: var(--muted); text-align: left;
+  white-space: nowrap; background: var(--bg);
+}
+.viajeros-table th:first-child { padding-left: 16px; }
+.viajeros-table th:last-child  { padding-right: 16px; text-align: center; }
+
+/* Row */
+.tbl-row { cursor: pointer; transition: background .12s; }
+.tbl-row:hover .tbl-cell { background: #f7f4f0; }
+.tbl-row.open .tbl-cell  { background: #f4f0eb; }
+.tbl-cell {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle; font-size: .83rem;
+  color: var(--text); transition: background .12s;
+}
+.tbl-cell:first-child { padding-left: 16px; }
+.tbl-cell:last-child  { padding-right: 16px; text-align: center; }
+.tbl-row.pay-urgent .tbl-cell:first-child { border-left: 3px solid var(--red); padding-left: 13px; }
+.tbl-row.pay-soon   .tbl-cell:first-child { border-left: 3px solid #c8a000; padding-left: 13px; }
+.tbl-row.pay-ok     .tbl-cell:first-child { border-left: 3px solid #38a070; padding-left: 13px; }
+
+/* Detail row */
+.tbl-detail { display: none; }
+.tbl-detail.open { display: table-row; }
+.tbl-detail-cell {
+  padding: 0 !important;
+  border-bottom: 2px solid var(--border2);
+}
+.tbl-detail-inner {
+  padding: 18px 20px 20px;
+  background: #fdfcfb;
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+/* Name cell */
+.tbl-name { font-weight: 600; font-size: .88rem; color: var(--text); }
+.tbl-wp   { font-size: .72rem; color: var(--muted); margin-top: 1px; }
+.tbl-chevron {
+  display: inline-block; font-size: .7rem;
+  color: var(--muted); transition: transform .18s;
+}
+.tbl-row.open .tbl-chevron { transform: rotate(180deg); }
+
+/* Avatar small */
+.avatar-sm {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700; font-size: .58rem;
+  flex-shrink: 0; color: #fff; vertical-align: middle;
+  margin-right: 8px; line-height: 1; text-align: center;
+}
+
+/* chips */
+.chip {
+  border-radius: 5px; padding: 3px 9px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .65rem; font-weight: 600;
+  white-space: nowrap; border: 1px solid transparent;
+  display: inline-block;
+}
+.chip + .chip { margin-left: 4px; }
+.chip-disney  { background: var(--disney-bg); color: var(--disney); border-color: var(--disney-bd); }
+.chip-uni     { background: var(--uni-bg);    color: var(--uni);    border-color: var(--uni-bd); }
+.chip-land    { background: #f0ebfa;          color: #5b3fae;       border-color: #cbbef0; }
+.chip-entradas{ background: var(--other-bg);  color: var(--other);  border-color: var(--other-bd); }
+
+.chip-pay-urgent { background: var(--red-bg);    color: var(--red);    border: 1px solid #e8b0b0; }
+.chip-pay-soon   { background: var(--yellow-bg); color: var(--yellow); border: 1px solid var(--yellow-bd); }
+.chip-pay-ok     { background: var(--green-bg);  color: var(--green);  border: 1px solid #88d0a8; }
+.chip-pay-none   { background: #f0f0f0;          color: var(--muted);  border: 1px solid #ddd; }
+
+/* monospace reserva */
+.mono-sm { font-family: 'Courier New', monospace; font-size: .78rem; color: var(--text2); letter-spacing: .02em; }
+
+/* legacy compat */
+.cards-list { display: flex; flex-direction: column; gap: 0; }
+.card-body { display: none; }
+.card-body.open { display: block; }
+
+/* ── Pkg sections ── */
+.pkg-sections { display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px; }
+.pkg-section {
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1.5px solid transparent;
+}
+.pkg-sec-disney { border-color: var(--disney-bd); }
+.pkg-sec-uni    { border-color: var(--uni-bd); }
+.pkg-sec-other  { border-color: var(--other-bd); }
+
+.pkg-sec-head {
+  padding: 10px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.pkg-head-disney { background: var(--disney-bg); color: var(--disney); }
+.pkg-head-uni    { background: var(--uni-bg);    color: var(--uni); }
+.pkg-head-other  { background: var(--other-bg);  color: var(--other); }
+
+.pkg-sec-body {
+  padding: 14px 16px;
+  display: flex; flex-wrap: wrap; gap: 16px 24px;
+  background: var(--surface);
+}
+.pkg-det { min-width: 150px; flex: 1; }
+.pkg-det-lbl {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .62rem; text-transform: uppercase;
+  letter-spacing: .09em; color: var(--muted);
+  font-weight: 600; margin-bottom: 4px;
+}
+.pkg-det-val {
+  font-family: 'Lora', Georgia, serif;
+  font-size: .88rem; font-weight: 500; color: var(--text);
+}
+.pkg-det-val.money   { color: var(--green); font-weight: 700; }
+.pkg-det-val.paydate { color: var(--pink); font-weight: 700; }
+.pkg-det-val.mono    { font-family: 'Courier New', monospace; opacity: .8; font-size: .82rem; }
+
+.pkg-auto {
+  padding: 10px 16px 12px;
+  display: flex; flex-wrap: wrap; gap: 7px;
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+}
+.pkg-note {
+  border-radius: 6px; padding: 5px 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .72rem; font-weight: 600;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.pn-ll     { background: var(--yellow-bg); color: var(--yellow);  border: 1.5px solid var(--yellow-bd); }
+.pn-dining { background: var(--uni-bg);    color: var(--uni);     border: 1.5px solid var(--uni-bd); }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+.pn-blink { animation: blink 1.2s infinite; }
+
+/* ── Notes row ── */
+.notes-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.note {
+  border-radius: 8px; padding: 6px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .76rem; font-weight: 500;
+}
+.note-hw    { background: var(--orange-bg); color: var(--orange); border: 1.5px solid #f0c890; }
+.note-extra { background: var(--yellow-bg); color: var(--yellow); border: 1.5px solid var(--yellow-bd); }
+.note-auto  { background: var(--green-bg);  color: var(--green);  border: 1.5px solid #88d0a8; }
+
+/* ── Card actions ── */
+.card-actions {
+  display: flex; gap: 8px; margin-top: 18px;
+  padding-top: 16px; border-top: 1.5px solid var(--border);
+  flex-wrap: wrap;
+}
+.btn-edit {
+  background: var(--pink); color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600; font-size: .78rem;
+  padding: 8px 20px; border: none;
+  border-radius: 50px; cursor: pointer;
+  transition: all .2s; letter-spacing: .02em;
+}
+.btn-edit:hover { background: #b04460; }
+.btn-del {
+  background: var(--red-bg); color: var(--red);
+  border: 1.5px solid #e8b0b0;
+  border-radius: 50px; padding: 8px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .78rem; font-weight: 600; cursor: pointer; transition: all .2s;
+}
+.btn-del:hover { background: #f5d8d8; }
+.btn-move {
+  background: var(--uni-bg); color: var(--uni);
+  border: 1.5px solid var(--uni-bd);
+  border-radius: 50px; padding: 8px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .78rem; font-weight: 600; cursor: pointer; transition: all .2s;
+}
+.btn-move:hover { background: #b8ece6; }
+
+/* ── Modal ── */
+.modal-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(20,16,10,.5); backdrop-filter: blur(5px);
+  z-index: 500; align-items: center; justify-content: center; padding: 20px;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  width: 100%; max-width: 720px; max-height: 92vh;
+  overflow-y: auto; padding: 32px; position: relative;
+  box-shadow: 0 28px 80px rgba(20,16,10,.2);
+}
+.modal-hd {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+}
+.modal-hd h2 {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: var(--text); font-size: 1.4rem; font-weight: 700;
+}
+.modal-close {
+  margin-left: auto; background: none; border: none;
+  color: var(--muted); font-size: 1.2rem; cursor: pointer;
+  padding: 4px; transition: color .2s;
+}
+.modal-close:hover { color: var(--text); }
+
+.fsec-title {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .7rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--pink); margin: 20px 0 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.fsec-title::after {
+  content: ''; flex: 1; height: 1.5px;
+  background: linear-gradient(to right, var(--pink-mid), transparent);
+}
+
+.fgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.fg { display: flex; flex-direction: column; gap: 6px; }
+.fg.full { grid-column: 1/-1; }
+.fg label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .68rem; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--muted); font-weight: 600;
+}
+.fg input, .fg select, .fg textarea {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Lora', Georgia, serif;
+  font-size: .88rem; padding: 10px 13px;
+  outline: none; transition: border-color .2s; width: 100%;
+}
+.fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--pink); }
+.fg input[type="date"] { cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.fg textarea { resize: vertical; min-height: 72px; line-height: 1.6; }
+
+.pkg-forms { display: flex; flex-direction: column; gap: 14px; margin-bottom: 10px; }
+.pkg-form {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+}
+.pkg-form-hd {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--text2);
+}
+.pktype-badge { border-radius: 6px; padding: 3px 10px; font-size: .64rem; font-weight: 700; }
+.ptb-disney { background: var(--disney-bg); color: var(--disney); }
+.ptb-uni    { background: var(--uni-bg);    color: var(--uni); }
+.ptb-other  { background: var(--other-bg);  color: var(--other); }
+
+.btn-rm-pkg {
+  margin-left: auto; background: none; border: none;
+  color: var(--muted); cursor: pointer;
+  font-size: .88rem; padding: 0 4px; transition: color .2s;
+}
+.btn-rm-pkg:hover { color: var(--red); }
+
+.btn-add-pkg {
+  background: transparent;
+  border: 1.5px dashed var(--border2);
+  color: var(--text2);
+  border-radius: 8px; padding: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .78rem; font-weight: 600; cursor: pointer;
+  width: 100%; margin-top: 4px; transition: all .2s;
+}
+.btn-add-pkg:hover { background: var(--bg); border-color: var(--pink); color: var(--pink); }
+
+.autocalc-hint {
+  background: var(--yellow-bg);
+  border: 1.5px solid var(--yellow-bd);
+  border-radius: 8px;
+  padding: 9px 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .73rem; font-weight: 500; color: var(--yellow);
+  margin-top: 8px; display: flex; align-items: flex-start; gap: 7px;
+}
+
+.form-actions {
+  display: flex; gap: 10px;
+  margin-top: 24px; justify-content: flex-end;
+}
+.btn-save {
+  background: var(--pink); color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600; font-size: .88rem;
+  padding: 11px 30px; border: none;
+  border-radius: 50px; cursor: pointer;
+  transition: all .2s;
+}
+.btn-save:hover { background: #b04460; transform: translateY(-1px); }
+.btn-cancel {
+  background: var(--bg); color: var(--muted);
+  border: 1.5px solid var(--border);
+  border-radius: 50px; padding: 11px 26px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .88rem; font-weight: 500; cursor: pointer; transition: all .2s;
+}
+.btn-cancel:hover { background: #ededea; color: var(--text); }
+
+.empty { text-align: center; padding: 56px 20px; color: var(--muted); }
+.empty-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.empty-text {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .95rem; font-weight: 500;
+}
+
+/* ── Confirm ── */
+.confirm-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(20,16,10,.5); backdrop-filter: blur(5px);
+  z-index: 600; align-items: center; justify-content: center;
+}
+.confirm-bg.open { display: flex; }
+.confirm-box {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 30px; max-width: 380px; width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,.15);
+}
+.confirm-box h3 {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: var(--text); font-size: 1.1rem; margin-bottom: 10px;
+}
+.confirm-box p {
+  font-family: 'DM Sans', sans-serif;
+  color: var(--muted); font-size: .86rem;
+  line-height: 1.6; margin-bottom: 20px;
+}
+.confirm-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+.auto-badge {
+  background: var(--green-bg); color: var(--green);
+  font-family: 'DM Sans', sans-serif;
+  font-size: .6rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 6px;
+  margin-left: 8px; vertical-align: middle;
+  border: 1px solid #88d0a8;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+@media (max-width: 700px) {
+  header { padding: 0 16px; }
+  .notif-panel, .tabs-wrap, .panel { padding: 0 10px; }
+  .panel-inner { padding: 12px 10px; }
+  .fgrid { grid-template-columns: 1fr; }
+  .fg.full { grid-column: 1; }
+  .modal { padding: 20px; }
+  /* hide reserva and fechas columns on mobile, keep name/dest/pago */
+  .viajeros-table th:nth-child(3),
+  .viajeros-table th:nth-child(4),
+  .viajeros-table td:nth-child(3),
+  .viajeros-table td:nth-child(4) { display: none; }
+  .tbl-cell { padding: 8px 8px; }
+}
+
+/* ── Password overlay ── */
+#pw-overlay {
+  position: fixed; inset: 0; z-index: 99999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+#pw-overlay.hidden { display: none; }
+.pw-box {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 44px 40px;
+  max-width: 380px; width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+}
+.pw-icon { font-size: 2.8rem; margin-bottom: 16px; }
+.pw-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.35rem; font-weight: 700;
+  color: var(--text); margin-bottom: 6px;
+}
+.pw-sub {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .8rem; color: var(--muted);
+  margin-bottom: 24px;
+}
+.pw-input {
+  width: 100%; background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 10px; padding: 12px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .95rem; color: var(--text);
+  outline: none; text-align: center;
+  letter-spacing: .08em; margin-bottom: 14px;
+  transition: border-color .2s;
+}
+.pw-input:focus { border-color: var(--pink); }
+.pw-input.error { border-color: var(--red); animation: shake .3s; }
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)}
+  80%{transform:translateX(4px)}
+}
+.pw-btn {
+  width: 100%; background: var(--pink); color: #fff;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600; font-size: .88rem;
+  padding: 12px; border: none;
+  border-radius: 50px; cursor: pointer;
+  transition: all .2s;
+  box-shadow: 0 3px 12px rgba(196,83,106,.3);
+}
+.pw-btn:hover { background: #b04460; transform: translateY(-1px); }
+.pw-err {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .78rem; color: var(--red);
+  margin-top: 12px; min-height: 20px;
+}
+
+/* ── Firebase loading ── */
+#fb-loading {
+  position: fixed; inset: 0; background: var(--bg);
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 9999; gap: 16px;
+}
+#fb-loading .spinner {
+  width: 36px; height: 36px; border: 3px solid var(--border);
+  border-top-color: var(--pink); border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#fb-loading p {
+  font-family: 'DM Sans', sans-serif;
+  font-size: .88rem; color: var(--muted);
+}
+#fb-error {
+  display: none; position: fixed; bottom: 24px; right: 24px;
+  background: var(--red-bg); border: 1.5px solid #e8b0b0;
+  color: var(--red); border-radius: var(--radius);
+  padding: 12px 18px; font-family: 'DM Sans', sans-serif;
+  font-size: .82rem; font-weight: 600; z-index: 9998;
+  box-shadow: var(--shadow-md); max-width: 320px;
+}
+#fb-saving {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: 50px; padding: 8px 20px;
+  font-family: 'DM Sans', sans-serif; font-size: .78rem;
+  color: var(--text2); font-weight: 500;
+  box-shadow: var(--shadow-md); z-index: 9998;
+  display: none; align-items: center; gap: 8px;
+}
+#fb-saving .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--pink); animation: pulse-dot 1s ease-in-out infinite;
+}
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+</style>
+
+<body>
+
+<!-- Password overlay -->
+<div id="pw-overlay">
+  <div class="pw-box">
+    <div class="pw-icon">🏰</div>
+    <div class="pw-title">Armo Tu Viaje Mágico</div>
+    <div class="pw-sub">Panel privado · Ingresá la contraseña para continuar</div>
+    <input
+      class="pw-input" id="pw-input"
+      type="password" placeholder="Contraseña"
+      autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')checkPw()"
+    >
+    <button class="pw-btn" onclick="checkPw()">Ingresar →</button>
+    <div class="pw-err" id="pw-err"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const PASS = 'sarasa123';
+  const SESSION_KEY = 'atvm_auth';
+
+  function checkPw(){
+    const inp = document.getElementById('pw-input');
+    const err = document.getElementById('pw-err');
+    if(inp.value === PASS){
+      sessionStorage.setItem(SESSION_KEY, '1');
+      document.getElementById('pw-overlay').classList.add('hidden');
+      inp.value = '';
+      err.textContent = '';
+    } else {
+      inp.classList.add('error');
+      err.textContent = 'Contraseña incorrecta. Intentá de nuevo.';
+      setTimeout(()=>inp.classList.remove('error'), 400);
+      inp.select();
+    }
+  }
+  window.checkPw = checkPw;
+
+  // Auto-unlock if already authenticated this session
+  if(sessionStorage.getItem(SESSION_KEY) === '1'){
+    document.getElementById('pw-overlay').classList.add('hidden');
+  }
+
+  // Focus input on load
+  window.addEventListener('DOMContentLoaded', ()=>{
+    if(!document.getElementById('pw-overlay').classList.contains('hidden')){
+      setTimeout(()=>document.getElementById('pw-input').focus(), 100);
+    }
+  });
+})();
+</script>
+
+<!-- Firebase loading overlay -->
+<div id="fb-loading">
+  <div class="spinner"></div>
+  <p id="fb-loading-msg">Cargando viajeros...</p>
+</div>
+
+<!-- Save indicator & error toast -->
+<div id="fb-saving"><div class="dot"></div><span>Guardando...</span></div>
+<div id="fb-error"></div>
+
+<header>
+  <div class="logo">
+    <span class="logo-icon">🏰</span>
+    <div>
+      <div class="logo-text">Armo Tu Viaje Mágico</div>
+      <div class="logo-sub">Panel de Viajeros</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="btn-add" onclick="openModal()">+ Nuevo viajero</button>
+  </div>
+</header>
+
+<div class="notif-panel" id="notif-panel" style="display:none">
+  <div class="notif-title" onclick="toggleNotifs()" style="cursor:pointer;user-select:none">
+    <span id="notif-chevron" style="font-size:.7rem;transition:transform .2s;display:inline-block">▼</span>
+    Alertas activas
+    <span id="notif-count-badge"></span>
+  </div>
+  <div class="notif-list" id="notif-list"></div>
+</div>
+
+<!-- Confirm dismiss alert -->
+<div class="confirm-bg" id="dismiss-bg">
+  <div class="confirm-box">
+    <h3>¿Descartar esta alerta?</h3>
+    <p id="dismiss-desc">La alerta no volverá a aparecer en esta sesión.</p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" onclick="closeDismiss()">Cancelar</button>
+      <button class="btn-del" onclick="confirmDismiss()">Sí, descartar</button>
+    </div>
+  </div>
+</div>
+
+<div class="tabs-wrap">
+  <button class="tab active" onclick="switchTab('conf')">Confirmados <span class="badge" id="badge-conf">0</span></button>
+  <button class="tab" onclick="switchTab('past')">Pasados <span class="badge" id="badge-past">0</span></button>
+</div>
+
+<div class="panel active" id="panel-conf">
+  <div class="panel-inner">
+    <div class="stats-bar" id="stats-conf"></div>
+    <div class="cards-list" id="cards-conf"></div>
+  </div>
+</div>
+<div class="panel" id="panel-past">
+  <div class="panel-inner">
+    <div class="stats-bar" id="stats-past"></div>
+    <div class="cards-list" id="cards-past"></div>
+  </div>
+</div>
+
+<!-- Modal add/edit -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <div class="modal-hd">
+      <span style="font-size:1.5rem">🏰</span>
+      <h2 id="modal-title">Nuevo Viajero</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="fsec-title">Datos del viajero</div>
+    <div class="fgrid">
+      <div class="fg full"><label>Nombre del viajero</label><input type="text" id="f-name" placeholder="Ej: Maria González"></div>
+      <div class="fg"><label>Nombre en WP</label><input type="text" id="f-wp" placeholder="V0108"></div>
+      <div class="fg full"><label>Email</label><input type="text" id="f-email" placeholder="email@ejemplo.com"></div>
+    </div>
+    <div class="fsec-title">Paquetes / Reservas</div>
+    <div class="pkg-forms" id="pkg-forms"></div>
+    <button class="btn-add-pkg" onclick="addPkgForm()" type="button">+ Agregar paquete</button>
+    <div class="fsec-title">Extras</div>
+    <div class="fgrid">
+      <div class="fg full"><label>Notas / Recordatorios</label><textarea id="f-notes" placeholder="Señas, comentarios especiales..."></textarea></div>
+      <div class="fg"><label>Estado</label>
+        <select id="f-status"><option value="conf">Confirmado</option><option value="past">Pasado</option></select>
+      </div>
+      <div class="fg"><label>¿Halloween / evento Disney?</label>
+        <select id="f-hw"><option value="">No</option><option value="yes">Sí — avisar fechas</option></select>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeModal()" type="button">Cancelar</button>
+      <button class="btn-save" onclick="saveViajero()" type="button">Guardar viajero</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm delete -->
+<div class="confirm-bg" id="confirm-bg">
+  <div class="confirm-box">
+    <h3>¿Eliminar viajero?</h3>
+    <p>Esta acción no se puede deshacer.</p>
+    <div class="confirm-actions">
+      <button class="btn-cancel" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn-del" onclick="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+<!-- App script: runs immediately, no Firebase dependency -->
+<script>
+var viajeros = [];
+
+// ── Firebase stubs (replaced by real functions once Firebase connects) ──
+function showSaving(msg){
+  const el=document.getElementById('fb-saving');
+  if(el){ el.querySelector('span').textContent=msg||'Guardando...'; el.style.display='flex'; }
+}
+function hideSaving(){
+  const el=document.getElementById('fb-saving');
+  if(el) el.style.display='none';
+}
+function showError(msg){
+  const el=document.getElementById('fb-error');
+  if(el){ el.textContent='⚠ '+msg; el.style.display='block'; setTimeout(()=>el.style.display='none',6000); }
+}
+// These get replaced by real Firebase functions when the module loads:
+var saveViajeroToFirebase    = function(v){ console.log('FB not ready, queued:', v.id); };
+var deleteViajeroFromFirebase = function(id){ console.log('FB not ready, del queued:', id); };
+
+var viajeros = [];
+window.SEED_DATA = null; // set after SEED_DATA defined
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+
+// ─── Dismissed alerts & collapsible ──────────────
+// Persisted in localStorage so dismissals survive refresh/reopen
+const _LS_KEY = 'atvm_dismissed';
+const dismissedAlerts = new Set(JSON.parse(localStorage.getItem(_LS_KEY) || '[]'));
+function _saveDismissed(){ try{ localStorage.setItem(_LS_KEY, JSON.stringify([...dismissedAlerts])); }catch(e){} }
+
+let _notifsCollapsed = false;
+let _pendingDismissKey = null;
+
+function toggleNotifs(){
+  _notifsCollapsed = !_notifsCollapsed;
+  document.getElementById('notif-list').style.display = _notifsCollapsed ? 'none' : '';
+  const ch = document.getElementById('notif-chevron');
+  if(ch) ch.style.transform = _notifsCollapsed ? 'rotate(-90deg)' : '';
+}
+function askDismiss(key, desc){
+  _pendingDismissKey = key;
+  document.getElementById('dismiss-desc').textContent = '¿Segura que querés descartar la alerta de "' + desc + '"? No volverá a aparecer más.';
+  document.getElementById('dismiss-bg').classList.add('open');
+}
+function closeDismiss(){
+  _pendingDismissKey = null;
+  document.getElementById('dismiss-bg').classList.remove('open');
+}
+function confirmDismiss(){
+  if(_pendingDismissKey){ dismissedAlerts.add(_pendingDismissKey); _saveDismissed(); }
+  closeDismiss();
+  render();
+}
+
+// ─── Expose functions globally (needed by inline onclick) ─
+window.toggleNotifs   = toggleNotifs;
+window.askDismiss     = askDismiss;
+window.closeDismiss   = closeDismiss;
+window.confirmDismiss = confirmDismiss;
+
+// ─── Utils ───────────────────────────────────────
+function parseDate(s){
+  if(!s)return null;
+  if(s instanceof Date){const d=new Date(s);d.setHours(0,0,0,0);return d;}
+  const t=String(s).trim();
+  const m1=t.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m1)return new Date(+m1[1],+m1[2]-1,+m1[3]);
+  const m2=t.match(/^(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?$/);
+  if(m2){let y=m2[3]?+m2[3]:2026;if(y<100)y+=2000;return new Date(y,+m2[2]-1,+m2[1]);}
+  const months={ene:0,feb:1,mar:2,abr:3,may:4,jun:5,jul:6,ago:7,sep:8,oct:9,nov:10,dic:11,jan:0,apr:3,aug:7,dec:11};
+  const m3=t.match(/^(\d{1,2})\s+([a-zéA-Z]+)\s+(\d{2,4})$/i);
+  if(m3){const mo=months[m3[2].toLowerCase().substring(0,3)];if(mo!==undefined){let y=+m3[3];if(y<100)y+=2000;return new Date(y,mo,+m3[1]);}}
+  return null;
+}
+function days(d){if(!d)return null;return Math.round((d-TODAY)/86400000);}
+function fmt(d){if(!d)return'—';return d.toLocaleDateString('es-AR',{day:'2-digit',month:'short',year:'numeric'});}
+function fmtShort(d){if(!d)return'—';return d.toLocaleDateString('es-AR',{day:'2-digit',month:'short'});}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2);}
+const COLORS=['#c4536a','#1a5fa8','#0d7a6e','#b05a10','#7a4ab0','#a07a10','#1a6a44','#2a70c0','#a83060','#c07020'];
+function aColor(n){let h=0;for(let c of n)h=(h<<5)-h+c.charCodeAt(0);return COLORS[Math.abs(h)%COLORS.length];}
+function initials(n){return n.split(/[\s·\n+\/]/g).filter(Boolean).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+
+function pkgType(dest){
+  const d=(dest||'').toLowerCase();
+  if(d.includes('disneyland')||d.includes('land'))return'land';
+  if(d.includes('disney'))return'disney';
+  if(d.includes('universal'))return'uni';
+  return'other';
+}
+function isPackage(dest){return(dest||'').toLowerCase().includes('paquete');}
+function pkgLabel(type){
+  if(type==='disney')return'🏰 Disney';
+  if(type==='land')return'🏰 Disneyland';
+  if(type==='uni')return'🎢 Universal';
+  return'🎟️ Entradas / Otros';
+}
+// Solo Disney (no Universal) tiene LL y Dining
+function isDisneyPkg(p){
+  const type=pkgType(p.dest);
+  return isPackage(p.dest)&&(type==='disney'||type==='land');
+}
+
+// ─── Per-pkg auto-calc ────────────────────────────
+function pkgAlerts(p){
+  const isPkg=isPackage(p.dest);
+  const disneyPkg=isDisneyPkg(p);
+  let llDate=null,diningDate=null;
+  if(disneyPkg&&p.travelFrom){
+    const start=parseDate(p.travelFrom);
+    if(start){
+      llDate=new Date(start);llDate.setDate(llDate.getDate()-7);
+      diningDate=new Date(start);diningDate.setDate(diningDate.getDate()-60);
+    }
+  }
+  const dLL=days(llDate);
+  const dDining=days(diningDate);
+  return{llDate,diningDate,dLL,dDining,isPkg,isDisneyPkg:disneyPkg};
+}
+
+// ─── Compute viajero ─────────────────────────────
+function compute(v){
+  const payDates=v.pkgs.map(p=>parseDate(p.payDate)).filter(Boolean).sort((a,b)=>a-b);
+  const earlyPay=payDates[0]||null;
+  const dPay=days(earlyPay);
+  let travelEnd=null;
+  for(const p of v.pkgs){
+    const d=p.travelTo?parseDate(p.travelTo):(p.travelFrom?parseDate(p.travelFrom):null);
+    if(d&&(!travelEnd||d>travelEnd))travelEnd=d;
+  }
+  const dEnd=days(travelEnd);
+  const autoMoved=v.status==='conf'&&travelEnd&&dEnd!==null&&dEnd<0;
+  return{...v,earlyPay,travelEnd,dPay,dEnd,autoMoved};
+}
+
+function payChip(c){
+  if(!c.earlyPay)return`<span class="chip chip-pay-none">Sin fecha de pago</span>`;
+  if(c.dPay<0)return`<span class="chip chip-pay-urgent">VENCIDO</span>`;
+  if(c.dPay===0)return`<span class="chip chip-pay-urgent">⚠ HOY</span>`;
+  if(c.dPay<=7)return`<span class="chip chip-pay-urgent">⚠ Pago en ${c.dPay}d</span>`;
+  if(c.dPay<=30)return`<span class="chip chip-pay-soon">Pago en ${c.dPay}d</span>`;
+  return`<span class="chip chip-pay-ok">${fmt(c.earlyPay)}</span>`;
+}
+function payClass(c){if(!c.earlyPay)return'';if(c.dPay<=7)return'pay-urgent';if(c.dPay<=30)return'pay-soon';return'pay-ok';}
+
+// ─── Render pkg section ──────────────────────────
+function renderPkgSection(p){
+  const type=pkgType(p.dest);
+  const{llDate,diningDate,dLL,dDining,isPkg,isDisneyPkg:idp}=pkgAlerts(p);
+  const isDisOrLand=(type==='disney'||type==='land');
+  const secCls=isDisOrLand?'pkg-sec-disney':type==='uni'?'pkg-sec-uni':'pkg-sec-other';
+  const hdCls=isDisOrLand?'pkg-head-disney':type==='uni'?'pkg-head-uni':'pkg-head-other';
+
+  let travelStr='';
+  if(p.travelFrom&&p.travelTo)travelStr=`${fmt(parseDate(p.travelFrom))} → ${fmt(parseDate(p.travelTo))}`;
+  else if(p.travelFrom)travelStr=fmt(parseDate(p.travelFrom));
+
+  const payStr=p.payRaw||(p.payDate?`Antes del ${fmt(parseDate(p.payDate))}`:'');
+
+  let autoNotes='';
+  // Solo Disney: Lightning Lane (7 días) y Dining (60 días)
+  if(idp){
+    if(llDate){
+      const bl=dLL!==null&&dLL>=0&&dLL<=3;
+      const txt=dLL===0?'¡HOY!':dLL!==null&&dLL>=0&&dLL<=60?`en ${dLL}d (${fmtShort(llDate)})`:`${fmtShort(llDate)}`;
+      autoNotes+=`<span class="pkg-note pn-ll${bl?' pn-blink':''}">⚡ Lightning Lane 7: ${txt}</span>`;
+    }
+    if(diningDate){
+      const bl=dDining!==null&&dDining>=0&&dDining<=3;
+      const txt=dDining===0?'¡HABILITA HOY!':dDining!==null&&dDining>=0&&dDining<=90?`en ${dDining}d (${fmtShort(diningDate)})`:`${fmtShort(diningDate)}`;
+      autoNotes+=`<span class="pkg-note pn-dining${bl?' pn-blink':''}">🍽 Dining: ${txt}</span>`;
+    }
+  }
+
+  return`
+  <div class="pkg-section ${secCls}">
+    <div class="pkg-sec-head ${hdCls}">
+      ${pkgLabel(type)} — <span style="font-weight:500;opacity:.85">${p.dest}</span>
+      ${p.reserva?`<span style="margin-left:auto;font-family:'Courier New',monospace;font-size:.68rem;opacity:.7;letter-spacing:.04em">${p.reserva}</span>`:''}
+    </div>
+    <div class="pkg-sec-body">
+      ${travelStr?`<div class="pkg-det"><div class="pkg-det-lbl">Fechas de viaje</div><div class="pkg-det-val">${travelStr}</div></div>`:''}
+      ${p.valor?`<div class="pkg-det"><div class="pkg-det-lbl">Valor total</div><div class="pkg-det-val money">${p.valor}</div></div>`:''}
+      ${payStr?`<div class="pkg-det"><div class="pkg-det-lbl">Pagar antes de</div><div class="pkg-det-val paydate">${payStr}</div></div>`:''}
+    </div>
+    ${autoNotes?`<div class="pkg-auto">${autoNotes}</div>`:''}
+  </div>`;
+}
+
+// ─── Render row (table style) ────────────────────
+function renderCard(v,isPast){
+  const c=compute(v);
+  const bg=aColor(v.name);
+  const avatarText = v.wp ? v.wp.toUpperCase() : initials(v.name);
+
+  // Dest chips (compact)
+  const pkgChips=v.pkgs.map(p=>{
+    const t=pkgType(p.dest);
+    const cls=t==='disney'||t==='land'?'chip-disney':t==='uni'?'chip-uni':'chip-entradas';
+    return`<span class="chip ${cls}">${p.dest}</span>`;
+  }).join('');
+
+  // Reserva codes
+  const reservas = v.pkgs.map(p=>p.reserva).filter(Boolean).join(' · ');
+
+  // Travel dates (first pkg with dates)
+  const firstPkg = v.pkgs.find(p=>p.travelFrom)||v.pkgs[0];
+  let travelStr = '';
+  if(firstPkg&&firstPkg.travelFrom){
+    const from = parseDate(firstPkg.travelFrom);
+    const to   = firstPkg.travelTo ? parseDate(firstPkg.travelTo) : null;
+    travelStr  = to ? `${fmtShort(from)} → ${fmtShort(to)}` : fmtShort(from);
+    if(v.pkgs.length>1) travelStr += ` <span style="color:var(--muted);font-size:.7rem">+${v.pkgs.length-1}</span>`;
+  }
+
+  const payC  = !isPast ? payChip(c) : '';
+  const pCls  = !isPast ? payClass(c) : '';
+
+  // Detail: pkg sections + notes + actions
+  const pkgSections = v.pkgs.map(p=>renderPkgSection(p)).join('');
+  const notes=[];
+  if(v.halloween)notes.push(`<span class="note note-hw">🎃 Revisar eventos Halloween / Magic Kingdom</span>`);
+  if(v.notes)v.notes.split('\n').filter(Boolean).forEach(n=>notes.push(`<span class="note note-extra">📌 ${n}</span>`));
+  if(c.autoMoved)notes.push(`<span class="note note-auto">✓ Viaje finalizado</span>`);
+
+  const moveBtn=isPast
+    ?`<button class="btn-move" onclick="moveViajero('${v.id}','conf')">↑ Mover a Confirmados</button>`
+    :`<button class="btn-move" onclick="moveViajero('${v.id}','past')">↓ Mover a Pasados</button>`;
+
+  return`
+    <tr class="tbl-row ${pCls}" id="card-${v.id}" onclick="toggleCard('${v.id}')">
+      <td class="tbl-cell">
+        <span class="avatar-sm" style="background:${bg}">${avatarText}</span>
+        <span class="tbl-name">${v.name}${c.autoMoved?'<span class="auto-badge" style="margin-left:6px">Finalizado</span>':''}</span>
+        <div class="tbl-wp" style="margin-left:38px">${v.wp||''}</div>
+      </td>
+      <td class="tbl-cell">${pkgChips}</td>
+      <td class="tbl-cell" style="font-size:.8rem;color:var(--text2)">${travelStr}</td>
+      <td class="tbl-cell"><span class="mono-sm">${reservas||'—'}</span></td>
+      <td class="tbl-cell">${payC}</td>
+      <td class="tbl-cell"><span class="tbl-chevron" id="tog-${v.id}">▼</span></td>
+    </tr>
+    <tr class="tbl-detail" id="body-${v.id}">
+      <td class="tbl-detail-cell" colspan="6">
+        <div class="tbl-detail-inner">
+          <div class="pkg-sections">${pkgSections}</div>
+          ${notes.length?`<div class="notes-row">${notes.join('')}</div>`:''}
+          <div class="card-actions">
+            <button class="btn-edit" onclick="event.stopPropagation();openModal('${v.id}')">Editar</button>
+            ${moveBtn.replace('onclick="', 'onclick="event.stopPropagation();')}
+            <button class="btn-del" onclick="event.stopPropagation();askDelete('${v.id}')">Eliminar</button>
+          </div>
+        </div>
+      </td>
+    </tr>`;
+}
+
+function toggleCard(id){
+  const row = document.getElementById('card-'+id);
+  const det = document.getElementById('body-'+id);
+  const tog = document.getElementById('tog-'+id);
+  if(row) row.classList.toggle('open');
+  if(det) det.classList.toggle('open');
+  if(tog) tog.classList.toggle('open'); // reuses tbl-row.open .tbl-chevron rotate
+}
+
+// ─── Sort ────────────────────────────────────────
+function sortByPay(arr){
+  return[...arr].sort((a,b)=>{
+    const ca=compute(a),cb=compute(b);
+    if(!ca.earlyPay&&!cb.earlyPay)return 0;
+    if(!ca.earlyPay)return 1;if(!cb.earlyPay)return-1;
+    return ca.earlyPay-cb.earlyPay;
+  });
+}
+
+// ─── Render ──────────────────────────────────────
+function render(){
+  const autoMoved=viajeros.filter(v=>compute(v).autoMoved);
+  const confActive=sortByPay(viajeros.filter(v=>v.status==='conf'&&!compute(v).autoMoved));
+  const pastAll=[...autoMoved,...viajeros.filter(v=>v.status==='past')];
+
+  // ── Notifications ──────────────────────────────
+  const notifs=[];
+
+  function mkDismissBtn(key, label){
+    const safeKey = key.replace(/'/g, "\'");
+    const safeLabel = label.replace(/'/g, "\'");
+    return `<button class="notif-dismiss" onclick="event.stopPropagation();askDismiss('${safeKey}','${safeLabel}')" title="Descartar alerta">✕</button>`;
+  }
+
+  confActive.forEach(v=>{
+    const c=compute(v);
+    // Pagos próximos (≤15 días)
+    if(c.dPay!==null&&c.dPay>=0&&c.dPay<=15){
+      const key=`pay-${v.id}`;
+      if(!dismissedAlerts.has(key)){
+        const urgent=c.dPay<=7;
+        const cls=urgent?'n-pay-urgent n-urgent-anim':'n-pay';
+        const badge=c.dPay===0?'HOY':c.dPay===1?'Mañana':`En ${c.dPay} días`;
+        const label=`Pago ${v.name}`;
+        notifs.push({
+          order:c.dPay,
+          html:`<div class="notif ${cls}" onclick="scrollToCard('${v.id}')">
+            <span class="notif-icon">💳</span>
+            <div class="notif-body">
+              <div class="notif-name">${v.name}</div>
+              <div class="notif-desc">Vence pago — ${fmt(c.earlyPay)}</div>
+            </div>
+            <span class="notif-badge">${badge}</span>
+            ${mkDismissBtn(key, label)}
+          </div>`
+        });
+      }
+    }
+    // Dining y Lightning Lane — solo Disney
+    v.pkgs.forEach(p=>{
+      if(!isDisneyPkg(p))return;
+      const{llDate,diningDate,dLL,dDining}=pkgAlerts(p);
+      const travelStart = p.travelFrom ? parseDate(p.travelFrom) : null;
+      const dTravel = days(travelStart);
+      const alreadyTraveled = dTravel !== null && dTravel < 0;
+
+      if(!alreadyTraveled && diningDate && dDining !== null && dDining <= 60) {
+        const key=`dining-${v.id}-${p.reserva||p.dest}`;
+        if(!dismissedAlerts.has(key)){
+          const badge = dDining > 0 ? (dDining===1?'Mañana':`En ${dDining} días`) : '✓ Habilitado';
+          const cls = dDining <= 0 ? 'n-dining n-active' : 'n-dining';
+          const desc = dDining > 0
+            ? `Se habilitan reservas Dining — ${p.dest} (${fmt(diningDate)})`
+            : `Reservas Dining habilitadas desde el ${fmt(diningDate)} — ${p.dest}`;
+          const label=`Dining ${v.name} — ${p.dest}`;
+          notifs.push({
+            order: 1000 + (dDining >= 0 ? dDining : 0),
+            html:`<div class="notif ${cls}" onclick="scrollToCard('${v.id}')">
+              <span class="notif-icon">🍽</span>
+              <div class="notif-body">
+                <div class="notif-name">${v.name}</div>
+                <div class="notif-desc">${desc}</div>
+              </div>
+              <span class="notif-badge">${badge}</span>
+              ${mkDismissBtn(key, label)}
+            </div>`
+          });
+        }
+      }
+      if(!alreadyTraveled && llDate && dLL !== null && dLL <= 7) {
+        const key=`ll-${v.id}-${p.reserva||p.dest}`;
+        if(!dismissedAlerts.has(key)){
+          const badge = dLL > 0 ? (dLL===1?'Mañana':`En ${dLL} días`) : '✓ Habilitado';
+          const cls = dLL <= 0 ? 'n-ll n-active' : 'n-ll';
+          const desc = dLL > 0
+            ? `Se habilita Lightning Lane 7 — ${p.dest} (${fmt(llDate)})`
+            : `Lightning Lane 7 habilitado desde el ${fmt(llDate)} — ${p.dest}`;
+          const label=`Lightning Lane ${v.name} — ${p.dest}`;
+          notifs.push({
+            order: 500 + (dLL >= 0 ? dLL : 0),
+            html:`<div class="notif ${cls}" onclick="scrollToCard('${v.id}')">
+              <span class="notif-icon">⚡</span>
+              <div class="notif-body">
+                <div class="notif-name">${v.name}</div>
+                <div class="notif-desc">${desc}</div>
+              </div>
+              <span class="notif-badge">${badge}</span>
+              ${mkDismissBtn(key, label)}
+            </div>`
+          });
+        }
+      }
+    });
+  });
+  notifs.sort((a,b)=>a.order-b.order);
+  const np=document.getElementById('notif-panel');
+  const nl=document.getElementById('notif-list');
+  if(notifs.length){
+    np.style.display='block';
+    if(!_notifsCollapsed) nl.style.display='';
+    // update count badge
+    const cb=document.getElementById('notif-count-badge');
+    if(cb){ cb.className='notif-count-badge'; cb.textContent=notifs.length; }
+    nl.innerHTML=notifs.map(n=>n.html).join('');
+  }else{
+    np.style.display='none';
+    nl.innerHTML='';
+  }
+
+  // Stats conf
+  const urgent=confActive.filter(v=>compute(v).dPay!==null&&compute(v).dPay>=0&&compute(v).dPay<=7);
+  document.getElementById('stats-conf').innerHTML=`
+    <div class="stat"><div class="stat-val">${confActive.length}</div><div class="stat-lbl">Viajeros activos</div></div>
+    <div class="stat"><div class="stat-val" style="color:${urgent.length?'var(--red)':'var(--green)'}">${urgent.length}</div><div class="stat-lbl">Pagos ≤ 7 días</div></div>
+    <div class="stat"><div class="stat-val">${confActive.filter(v=>compute(v).earlyPay).length}</div><div class="stat-lbl">Con fecha de pago</div></div>
+    <div class="stat"><div class="stat-val">${autoMoved.length}</div><div class="stat-lbl">Finalizados hoy</div></div>
+  `;
+  document.getElementById('cards-conf').innerHTML=confActive.length
+    ?`<div class="tbl-wrap"><table class="viajeros-table">
+        <thead><tr>
+          <th>Viajero</th><th>Destino</th><th>Fechas</th><th>Reserva</th><th>Pago</th><th></th>
+        </tr></thead>
+        <tbody>${confActive.map(v=>renderCard(v,false)).join('')}</tbody>
+      </table></div>`
+    :'<div class="empty"><div class="empty-icon">✨</div><div class="empty-text">No hay viajeros confirmados aún.</div></div>';
+  document.getElementById('badge-conf').textContent=confActive.length;
+
+  // Stats past
+  document.getElementById('stats-past').innerHTML=`
+    <div class="stat"><div class="stat-val">${pastAll.length}</div><div class="stat-lbl">Total historial</div></div>
+    ${autoMoved.length?`<div class="stat"><div class="stat-val">${autoMoved.length}</div><div class="stat-lbl">Auto-finalizados</div></div>`:''}
+  `;
+  function wrapTable(rows){
+    return`<div class="tbl-wrap"><table class="viajeros-table">
+      <thead><tr>
+        <th>Viajero</th><th>Destino</th><th>Fechas</th><th>Reserva</th><th>Pago</th><th></th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+  }
+  let pastHTML='';
+  if(autoMoved.length){
+    pastHTML+=`<div class="section-title">Finalizados automáticamente</div>`;
+    pastHTML+=wrapTable(autoMoved.map(v=>renderCard(v,true)).join(''));
+    pastHTML+=`<div class="section-title">Historial anterior</div>`;
+  }
+  const pastManual=viajeros.filter(v=>v.status==='past');
+  if(pastManual.length) pastHTML+=wrapTable(pastManual.map(v=>renderCard(v,true)).join(''));
+  document.getElementById('cards-past').innerHTML=pastHTML||'<div class="empty"><div class="empty-icon">🏖</div><div class="empty-text">Sin historial aún.</div></div>';
+  document.getElementById('badge-past').textContent=pastAll.length;
+}
+
+function scrollToCard(id){
+  const el=document.getElementById('card-'+id);
+  if(el){
+    el.scrollIntoView({behavior:'smooth',block:'center'});
+    if(!el.classList.contains('open')) toggleCard(id);
+  }
+}
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',(i===0&&t==='conf')||(i===1&&t==='past')));
+  document.getElementById('panel-conf').classList.toggle('active',t==='conf');
+  document.getElementById('panel-past').classList.toggle('active',t==='past');
+}
+function moveViajero(id,toStatus){
+  const v=viajeros.find(x=>x.id===id);if(v)v.status=toStatus;render();
+}
+
+let _delId=null;
+function askDelete(id){_delId=id;document.getElementById('confirm-bg').classList.add('open');}
+function closeConfirm(){_delId=null;document.getElementById('confirm-bg').classList.remove('open');}
+function confirmDelete(){if(_delId)viajeros=viajeros.filter(v=>v.id!==_delId);closeConfirm();render();}
+
+// ─── Modal ───────────────────────────────────────
+let _editId=null,_pkgCount=0;
+
+function openModal(id){
+  _editId=id||null;_pkgCount=0;
+  document.getElementById('modal-title').textContent=id?'Editar Viajero':'Nuevo Viajero';
+  document.getElementById('pkg-forms').innerHTML='';
+  if(id){
+    const v=viajeros.find(x=>x.id===id);if(!v)return;
+    document.getElementById('f-name').value=v.name||'';
+    document.getElementById('f-wp').value=v.wp||'';
+    document.getElementById('f-email').value=v.email||'';
+    document.getElementById('f-notes').value=v.notes||'';
+    document.getElementById('f-status').value=v.status||'conf';
+    document.getElementById('f-hw').value=v.halloween?'yes':'';
+    v.pkgs.forEach(p=>addPkgForm(p));
+  }else{
+    ['f-name','f-wp','f-email','f-notes'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-status').value='conf';
+    document.getElementById('f-hw').value='';
+    addPkgForm();
+  }
+  document.getElementById('modal-bg').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-bg').classList.remove('open');_editId=null;}
+
+function updatePkgBadge(i){
+  const destEl=document.getElementById('pkg-dest-'+i);if(!destEl)return;
+  const type=pkgType(destEl.value);
+  const badge=document.getElementById('ptb-'+i);
+  if(badge){
+    badge.textContent=pkgLabel(type);
+    badge.className='pktype-badge '+(type==='disney'||type==='land'?'ptb-disney':type==='uni'?'ptb-uni':'ptb-other');
+  }
+  const isPkg=isPackage(destEl.value);
+  const isDisney=type==='disney'||type==='land';
+  // Solo mostrar hints LL y Dining si es Disney
+  const llH=document.getElementById('llhint-'+i);if(llH)llH.style.display=(isPkg&&isDisney)?'flex':'none';
+  const dH=document.getElementById('dhint-'+i);if(dH)dH.style.display=(isPkg&&isDisney)?'flex':'none';
+}
+
+function addPkgForm(data){
+  const i=_pkgCount++;const d=data||{};
+  const type=pkgType(d.dest||'');
+  const badgeCls=type==='disney'||type==='land'?'ptb-disney':type==='uni'?'ptb-uni':'ptb-other';
+  const isPkg=isPackage(d.dest||'');
+  const isDisney=type==='disney'||type==='land';
+  // Mostrar hints solo si es Disney
+  const showHints=isPkg&&isDisney;
+  const el=document.createElement('div');
+  el.className='pkg-form';el.id='pkg-form-'+i;
+  el.innerHTML=`
+    <div class="pkg-form-hd">
+      Paquete ${i+1}
+      <span id="ptb-${i}" class="pktype-badge ${badgeCls}">${pkgLabel(type)}</span>
+      <button class="btn-rm-pkg" onclick="removePkgForm(${i})" type="button">✕</button>
+    </div>
+    <div class="fgrid">
+      <div class="fg full">
+        <label>Destino / Tipo</label>
+        <input type="text" id="pkg-dest-${i}" value="${d.dest||''}" placeholder="Ej: Paquete Disney" oninput="updatePkgBadge(${i})">
+      </div>
+      <div class="fg">
+        <label>Código de reserva</label>
+        <input type="text" id="pkg-res-${i}" value="${d.reserva||''}" placeholder="41234567">
+      </div>
+      <div class="fg">
+        <label>Valor total</label>
+        <input type="text" id="pkg-val-${i}" value="${d.valor||''}" placeholder="$2,500.00">
+      </div>
+      <div class="fg">
+        <label>Fecha inicio del viaje</label>
+        <input type="date" id="pkg-from-${i}" value="${d.travelFrom||''}">
+      </div>
+      <div class="fg">
+        <label>Fecha fin del viaje</label>
+        <input type="date" id="pkg-to-${i}" value="${d.travelTo||''}">
+      </div>
+      <div class="fg">
+        <label>Fecha límite de pago</label>
+        <input type="date" id="pkg-pay-${i}" value="${d.payDate||''}">
+      </div>
+      <div class="fg">
+        <label>Texto pago (referencia)</label>
+        <input type="text" id="pkg-payraw-${i}" value="${d.payRaw||''}" placeholder="Antes del 15/8">
+      </div>
+    </div>
+    <div id="llhint-${i}" class="autocalc-hint" style="display:${showHints?'flex':'none'}">
+      ⚡ Lightning Lane se calculará automáticamente: 7 días antes del inicio del viaje (solo Disney).
+    </div>
+    <div id="dhint-${i}" class="autocalc-hint" style="display:${showHints?'flex':'none'};margin-top:6px">
+      🍽 Reservas Dining: 60 días antes del inicio del viaje (solo Disney).
+    </div>
+  `;
+  document.getElementById('pkg-forms').appendChild(el);
+}
+
+function removePkgForm(i){const el=document.getElementById('pkg-form-'+i);if(el)el.remove();}
+
+
+
+
+// ─── Firebase CRUD ────────────────────────────
+// ─── Override save/delete/move to persist ────────
+function saveViajero(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){alert('El nombre es obligatorio.');return;}
+  const pkgs=[];
+  for(let i=0;i<_pkgCount;i++){
+    const destEl=document.getElementById('pkg-dest-'+i);if(!destEl)continue;
+    pkgs.push({
+      dest:destEl.value.trim(),
+      reserva:(document.getElementById('pkg-res-'+i)||{}).value||'',
+      valor:(document.getElementById('pkg-val-'+i)||{}).value||'',
+      travelFrom:(document.getElementById('pkg-from-'+i)||{}).value||'',
+      travelTo:(document.getElementById('pkg-to-'+i)||{}).value||'',
+      payDate:(document.getElementById('pkg-pay-'+i)||{}).value||'',
+      payRaw:(document.getElementById('pkg-payraw-'+i)||{}).value||'',
+      ll:'',
+    });
+  }
+  const data={
+    name,
+    wp:document.getElementById('f-wp').value.trim(),
+    email:document.getElementById('f-email').value.trim(),
+    notes:document.getElementById('f-notes').value.trim(),
+    status:document.getElementById('f-status').value,
+    halloween:document.getElementById('f-hw').value==='yes',
+    pkgs:pkgs.length?pkgs:[{dest:'',reserva:'',valor:'',travelFrom:'',travelTo:'',payDate:'',payRaw:'',ll:''}],
+  };
+  if(_editId){
+    const idx=viajeros.findIndex(v=>v.id===_editId);
+    if(idx>-1){ viajeros[idx]={...viajeros[idx],...data}; saveViajeroToFirebase(viajeros[idx]); }
+  }else{
+    const newV={id:uid(),...data};
+    viajeros.push(newV);
+    saveViajeroToFirebase(newV);
+  }
+  closeModal();render();
+}
+window.saveViajero = saveViajero;
+
+function confirmDelete(){
+  if(_delId){
+    viajeros=viajeros.filter(v=>v.id!==_delId);
+    deleteViajeroFromFirebase(_delId);
+  }
+  closeConfirm();render();
+}
+window.confirmDelete = confirmDelete;
+
+function moveViajero(id,toStatus){
+  const v=viajeros.find(x=>x.id===id);
+  if(v){ v.status=toStatus; saveViajeroToFirebase(v); }
+  render();
+}
+window.moveViajero = moveViajero;
+
+// ─── Expose all other onclick functions globally ──
+window.openModal       = openModal;
+window.closeModal      = closeModal;
+window.addPkgForm      = addPkgForm;
+window.removePkgForm   = removePkgForm;
+window.updatePkgBadge  = updatePkgBadge;
+window.toggleCard      = toggleCard;
+window.scrollToCard    = scrollToCard;
+window.switchTab       = switchTab;
+window.askDelete       = askDelete;
+window.closeConfirm    = closeConfirm;
+
+// ─── Seed initial data if Firestore is empty ─────
+const SEED_DATA=[
+  // ── Confirmados ──
+  {id:'seed_001',status:'conf',name:'Maria Maldonado',wp:'v098',email:'mariasolangel843@gmail.com',halloween:false,notes:'',
+   pkgs:[{dest:'Paquete DisneyLAND',reserva:'18538632',valor:'$1,562.73',travelFrom:'2026-05-05',travelTo:'2026-05-07',payDate:'2026-04-05',payRaw:'',ll:''}]},
+
+  {id:'seed_002',status:'conf',name:'Zuidy Garita',wp:'V096',email:'zuidy92@gmail.com',halloween:false,notes:'',
+   pkgs:[{dest:'Paquete Disney',reserva:'41261011',valor:'$2,250.40',travelFrom:'2026-05-14',travelTo:'2026-05-18',payDate:'2026-04-14',payRaw:'',ll:''}]},
+
+  {id:'seed_003',status:'conf',name:'Moira Giordan',wp:'V0101',email:'Moiragiordan02@gmail.com',halloween:false,notes:'',
+   pkgs:[
+     {dest:'Paquete Disney',reserva:'41585277',valor:'$3,121.72',travelFrom:'2026-05-28',travelTo:'2026-06-03',payDate:'2026-04-28',payRaw:'28/4',ll:''},
+     {dest:'Paquete Universal',reserva:'738214U2',valor:'$2,540.65',travelFrom:'2026-06-03',travelTo:'2026-06-07',payDate:'2026-04-16',payRaw:'16/4',ll:''}
+   ]},
+
+  {id:'seed_004',status:'conf',name:'Antonio Veras · Mariel',wp:'v0107',email:'marielguzman1410@gmail.com',halloween:false,notes:'',
+   pkgs:[
+     {dest:'Entradas Magic',reserva:'73405177970468',valor:'',travelFrom:'2026-03-29',travelTo:'2026-04-04',payDate:'',payRaw:'',ll:''},
+     {dest:'Paquete Universal',reserva:'30C314U2',valor:'',travelFrom:'2026-03-29',travelTo:'2026-04-04',payDate:'',payRaw:'',ll:''}
+   ]},
+
+  {id:'seed_005',status:'conf',name:'Liliana Giraudo',wp:'V0105',email:'guadagiraudoo@gmail.com',halloween:false,notes:'',
+   pkgs:[{dest:'Paquete Universal',reserva:'C78314U2',valor:'$2,546.70',travelFrom:'2026-08-28',travelTo:'2026-09-04',payDate:'2026-07-14',payRaw:'',ll:''}]},
+
+  {id:'seed_006',status:'conf',name:'Lelys',wp:'V0106',email:'lelys_04@hotmail.com',halloween:true,notes:'Señó $393.69',
+   pkgs:[{dest:'Paquete Disney',reserva:'41744973',valor:'$4,289.38',travelFrom:'2026-08-12',travelTo:'2026-08-20',payDate:'2026-07-13',payRaw:'',ll:''}]},
+
+  {id:'seed_007',status:'conf',name:'Ivan Dimnik',wp:'v0100',email:'i.dimnik@hotmail.com',halloween:false,notes:'',
+   pkgs:[
+     {dest:'Paquete Disney',reserva:'41551133',valor:'$3,225.35',travelFrom:'2026-08-31',travelTo:'2026-09-06',payDate:'2026-07-23',payRaw:'1/8',ll:''},
+     {dest:'Paquete Universal',reserva:'G01214U2',valor:'$3,388.84',travelFrom:'2026-08-31',travelTo:'2026-09-06',payDate:'2026-07-23',payRaw:'23/7',ll:''}
+   ]},
+
+  {id:'seed_008',status:'conf',name:'Martin Moreira',wp:'V087',email:'sheril.juji96@gmail.com',halloween:false,
+   notes:'Señaron $200 · Restan $5,504.24',
+   pkgs:[{dest:'Paquete Disney',reserva:'39255937',valor:'$5,704.24',travelFrom:'2026-09-01',travelTo:'2026-09-06',payDate:'2026-08-02',payRaw:'',ll:''}]},
+
+  {id:'seed_009',status:'conf',name:'Angelys Bilbraut',wp:'V0104',email:'bilbrautangelys@gmail.com',halloween:true,notes:'',
+   pkgs:[{dest:'Paquete Disney',reserva:'41644249',valor:'$1,780.46',travelFrom:'2026-09-01',travelTo:'2026-09-06',payDate:'2026-08-02',payRaw:'',ll:''}]},
+
+  {id:'seed_010',status:'conf',name:'Mariangel Guzman',wp:'V0103',email:'maghbankes@gmail.com',halloween:true,notes:'Señó $179.48',
+   pkgs:[{dest:'Paquete Disney',reserva:'41635325',valor:'$1,980.87',travelFrom:'2026-09-11',travelTo:'2026-09-16',payDate:'2026-08-12',payRaw:'',ll:''}]},
+
+  {id:'seed_011',status:'conf',name:'Maria De Las Mercedes Fernandez',wp:'V094',email:'maria26mercedes@gmail.com',halloween:false,notes:'',
+   pkgs:[{dest:'Paquete Disney',reserva:'41165657',valor:'$4,407.46',travelFrom:'2026-09-15',travelTo:'2026-09-23',payDate:'2026-08-16',payRaw:'',ll:''}]},
+
+  {id:'seed_012',status:'conf',name:'Sofia Micaela Rodriguez',wp:'V0941',email:'maria26mercedes@gmail.com',halloween:false,notes:'',
+   pkgs:[{dest:'Paquete Disney',reserva:'41165839',valor:'$4,254.23',travelFrom:'2026-09-15',travelTo:'2026-09-23',payDate:'2026-08-16',payRaw:'',ll:''}]},
+
+  {id:'seed_013',status:'conf',name:'Alejandra Cortes',wp:'v099',email:'malecodu-1996@hotmail.com',halloween:false,notes:'',
+   pkgs:[{dest:'Paquete Disney',reserva:'41449031',valor:'$1,986.96',travelFrom:'2026-09-15',travelTo:'2026-09-20',payDate:'2026-08-16',payRaw:'',ll:''}]},
+
+  {id:'seed_014',status:'conf',name:'Irma Cadena',wp:'V0102',email:'cari071199@gmail.com',halloween:false,
+   notes:'⚠️ Avisar si hay evento Disney para que compren entradas',
+   pkgs:[{dest:'Paquete Disney',reserva:'41634837',valor:'$3,935.15',travelFrom:'2026-09-25',travelTo:'2026-10-02',payDate:'2026-08-26',payRaw:'',ll:''}]},
+
+  {id:'seed_015',status:'conf',name:'Marieliza Hernandez',wp:'V097',email:'marieliza.moran@hotmail.com',halloween:true,
+   notes:'⚠️ Avisar días de eventos Halloween para no chocar con Magic',
+   pkgs:[{dest:'Paquete Disney',reserva:'41262811',valor:'$2,784.44',travelFrom:'2026-10-12',travelTo:'2026-10-18',payDate:'2026-09-12',payRaw:'',ll:''}]},
+
+  {id:'seed_016',status:'conf',name:'Milena Quiroz',wp:'V095',
+   email:'milenaquiroz109@gmail.com · benjaminarias290@gmail.com',halloween:false,
+   notes:'⚠️ Avisar si hay evento Disney. El 20 de Octubre se habilitan Dinings.',
+   pkgs:[
+     {dest:'Paquete Disney',reserva:'41201995',valor:'$3,576.28',travelFrom:'2026-12-19',travelTo:'2026-12-25',payDate:'2026-11-19',payRaw:'19/11',ll:''},
+     {dest:'Paquete Universal',reserva:'E97904U2',valor:'$2,965.37',travelFrom:'2026-12-25',travelTo:'2026-12-30',payDate:'2026-11-10',payRaw:'10/11',ll:''}
+   ]},
+
+  // ── Pasados ──
+  {id:'seed_017',status:'past',name:'Stefania Yelinek · Gonzalo Vilches',wp:'V081',email:'',halloween:false,
+   notes:'Días Halloween: 16-19-21. Entradas Uni se sacan en puerta.',
+   pkgs:[
+     {dest:'Paquete Disney',reserva:'38656017',valor:'$1,930.92',travelFrom:'2025-09-16',travelTo:'2025-09-21',payDate:'',payRaw:'17/8/25',ll:''},
+     {dest:'Paquete Universal',reserva:'P64093U2',valor:'$1,686.64',travelFrom:'2025-09-21',travelTo:'2025-09-26',payDate:'',payRaw:'7/8/25',ll:''}
+   ]},
+
+  {id:'seed_018',status:'past',name:'Carla Valladares · Henry Silva · Carla Silva',wp:'V082',email:'',halloween:false,
+   notes:'Reserva 60 días antes para princesas. Avisar días evento y cierra temprano. Magic Kingdom el 15.',
+   pkgs:[{dest:'Paquete Disney',reserva:'38835777',valor:'$2,352.72',travelFrom:'2025-11-12',travelTo:'2025-11-16',payDate:'2025-10-13',payRaw:'',ll:''}]},
+
+  {id:'seed_019',status:'past',name:'Cristian Nij · Monica Ortiz',wp:'V083',email:'cristian_nij@hotmail.com · mos8730@gmail.com',halloween:false,
+   notes:'Entradas Uni se sacan en puerta.',
+   pkgs:[{dest:'Paquete Universal',reserva:'82A293U2',valor:'$2,222',travelFrom:'2025-10-12',travelTo:'2025-10-17',payDate:'2025-08-28',payRaw:'',ll:''}]},
+
+  {id:'seed_020',status:'past',name:'Jefferson Moreno · Christel Ocana · Jefferson Jr.',wp:'V084',email:'',halloween:false,
+   notes:'Magic Kingdom el 17.',
+   pkgs:[{dest:'Paquete Disney',reserva:'38958031',valor:'$1,910',travelFrom:'2025-09-15',travelTo:'2025-09-19',payDate:'2025-08-16',payRaw:'',ll:''}]},
+
+  {id:'seed_021',status:'past',name:'Ludmila · Ailen Arequipa · Esteban Bernal',wp:'V085',email:'esteban.bernal93@gmail.com',halloween:false,notes:'',
+   pkgs:[
+     {dest:'Entradas Disney',reserva:'YVET94313232',valor:'SALDADO',travelFrom:'',travelTo:'',payDate:'',payRaw:'',ll:''},
+     {dest:'Entradas Universal',reserva:'29K323U4',valor:'SALDADO',travelFrom:'',travelTo:'',payDate:'',payRaw:'',ll:''}
+   ]},
+
+  {id:'seed_022',status:'past',name:'Maria',wp:'V086',email:'maria.rosas.garcia@hotmail.com',halloween:false,
+   notes:"Disney $971.64 · Mickey's Hallo $318 · Universal $811.52 · Horror $191.68",
+   pkgs:[{dest:'Entradas Disney + Uni',reserva:'XUQC91424142 · WFCD87111111 · 523423U4',valor:'SALDADO',travelFrom:'2025-09-15',travelTo:'',payDate:'',payRaw:'',ll:''}]},
+
+  {id:'seed_023',status:'past',name:'Leandro Di Napoli',wp:'V088',email:'andririlo@hotmail.com',halloween:false,
+   notes:'🗓️ Reservas Dining: 19 de Junio 2026',
+   pkgs:[
+     {dest:'Paquete Disney',reserva:'39337605',valor:'$4,532.71',travelFrom:'2026-08-18',travelTo:'2026-08-23',payDate:'2026-07-19',payRaw:'19/7/26',ll:''},
+     {dest:'Paquete Universal',reserva:'J95693U2',valor:'$3,625.36',travelFrom:'2026-08-23',travelTo:'2026-08-27',payDate:'2026-07-09',payRaw:'9/7/26',ll:''}
+   ]},
+
+  {id:'seed_024',status:'past',name:'Sirza Isabel Valverde Mora',wp:'V089',email:'sir.zaisabel@gmail.com · gina@marketcont.com',halloween:false,
+   notes:'Llegan el 5, se van el 12.',
+   pkgs:[{dest:'Entradas Disney + Uni',reserva:'73258918772467 · 73258922114018 · 73258924832087',valor:'$390.12 / $434.52 / $651.78',travelFrom:'2025-10-07',travelTo:'2025-10-12',payDate:'',payRaw:'',ll:''}]},
+
+  {id:'seed_025',status:'past',name:'Enrique Ponce · Marina Martinez · Marianela Ponce',wp:'V090',email:'marinapmartinez77@gmail.com',halloween:false,
+   notes:'🗓️ Reservas Dining: 24 de Diciembre 2025',
+   pkgs:[
+     {dest:'Paquete Disney',reserva:'39528589',valor:'$3,108.37',travelFrom:'2026-02-22',travelTo:'2026-02-28',payDate:'2026-01-23',payRaw:'Antes del 23 de Enero',ll:''},
+     {dest:'Entradas Epic',reserva:'73356035996074',valor:'',travelFrom:'2026-02-22',travelTo:'2026-02-28',payDate:'',payRaw:'',ll:''}
+   ]},
+
+  {id:'seed_026',status:'past',name:'Martin Gritti · Soledad Bisutti · Josefina Gritti',wp:'V092',email:'MARTINGRITTI@gmail.com',halloween:false,
+   notes:"Señas: $250.20 / $403.07. Entradas Express en Expedia. 🗓️ Dining: 6 de Diciembre.",
+   pkgs:[
+     {dest:'Paquete Universal',reserva:'47L104U2',valor:'$2,256.66',travelFrom:'2026-01-31',travelTo:'2026-02-04',payDate:'',payRaw:'17 DEC 25',ll:''},
+     {dest:'Paquete Disney',reserva:'40065097',valor:'$4,414.53',travelFrom:'2026-02-04',travelTo:'2026-02-10',payDate:'',payRaw:'5 ENE 26',ll:''}
+   ]},
+
+  {id:'seed_027',status:'past',name:'Ariana Pinillos',wp:'V093',email:'arianna.pinillos19@gmail.com',halloween:false,notes:'',
+   pkgs:[{dest:'Entradas Uni y Express',reserva:'73365170756856 · 73365170962005',valor:'$340.78 / $413.22',travelFrom:'2026-02-04',travelTo:'',payDate:'',payRaw:'',ll:''}]},
+];  // end SEED_DATA
+window.SEED_DATA = SEED_DATA;
+
+
+// ─── Seed helpers ────────────────────────────────
+// ─── Firebase realtime listener (main entry point) ─
+
+// ── Start app immediately with seed data ──
+viajeros = [...SEED_DATA];
+render();
+// Expose all onclick handlers globally
+window.toggleNotifs   = toggleNotifs;
+window.askDismiss     = askDismiss;
+window.closeDismiss   = closeDismiss;
+window.confirmDismiss = confirmDismiss;
+window.openModal      = openModal;
+window.closeModal     = closeModal;
+window.addPkgForm     = addPkgForm;
+window.removePkgForm  = removePkgForm;
+window.updatePkgBadge = updatePkgBadge;
+window.toggleCard     = toggleCard;
+window.scrollToCard   = scrollToCard;
+window.switchTab      = switchTab;
+window.askDelete      = askDelete;
+window.closeConfirm   = closeConfirm;
+window.saveViajero    = saveViajero;
+window.confirmDelete  = confirmDelete;
+window.moveViajero    = moveViajero;
+
+document.getElementById('modal-bg').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('confirm-bg').addEventListener('click',function(e){if(e.target===this)closeConfirm();});
+document.getElementById('dismiss-bg').addEventListener('click',function(e){if(e.target===this)closeDismiss();});
+
+</script>
+
+<!-- Firebase SDK: background sync -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import {
+  getFirestore, collection, doc,
+  onSnapshot, setDoc, deleteDoc, writeBatch
+} from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey:            "AIzaSyC0J2qWAqBJIhYqxfJww6ceYAq-ApP49PM",
+  authDomain:        "mis-viajeros-86e05.firebaseapp.com",
+  projectId:         "mis-viajeros-86e05",
+  storageBucket:     "mis-viajeros-86e05.firebasestorage.app",
+  messagingSenderId: "971833627467",
+  appId:             "1:971833627467:web:ee2185a7d867ee7efa0ece"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+const COL = 'viajeros';
+
+// ── Inject real Firebase functions into global scope ──
+window.saveViajeroToFirebase = async function(v){
+  showSaving();
+  try { await setDoc(doc(db, COL, v.id), v); }
+  catch(e){ showError('Error al guardar: '+e.message); }
+  finally { hideSaving(); }
+};
+
+window.deleteViajeroFromFirebase = async function(id){
+  showSaving('Eliminando...');
+  try { await deleteDoc(doc(db, COL, id)); }
+  catch(e){ showError('Error al eliminar: '+e.message); }
+  finally { hideSaving(); }
+};
+
+// ── Upsert seed data (merge:true = never overwrites edits) ──
+(async () => {
+  try {
+    const batch = writeBatch(db);
+    SEED_DATA.forEach(v => batch.set(doc(db, COL, v.id), v, { merge: true }));
+    await batch.commit();
+    console.log('Seed sync ok');
+  } catch(e){ console.warn('Seed sync:', e.message); }
+
+  // ── Real-time listener: update UI when data changes from any device ──
+  try {
+    onSnapshot(collection(db, COL), (snapshot) => {
+      if(snapshot.docs.length > 0){
+        viajeros = snapshot.docs.map(d => d.data());
+        render();
+      }
+    }, (err) => {
+      console.warn('Firebase listener error:', err.message);
+    });
+  } catch(e){ console.warn('Firebase listener setup:', e.message); }
+})();
+</script>
+
+</body>
+</html>
