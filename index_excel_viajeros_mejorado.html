@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Armo Tu Viaje Mágico</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+
+<!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, collection, doc, setDoc, getDocs, onSnapshot, deleteDoc, updateDoc, addDoc, query, orderBy, where } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  // ═══════════════════════════════════════════
+  // 🔧 CONFIGURACIÓN FIREBASE — Reemplazá estos valores con los tuyos
+  // ═══════════════════════════════════════════
+  const firebaseConfig = {
+    apiKey: "AIzaSyC0J2qWAqBJIhYqxfJww6ceYAq-ApP49PM",
+    authDomain: "mis-viajeros-86e05.firebaseapp.com",
+    projectId: "mis-viajeros-86e05",
+    storageBucket: "mis-viajeros-86e05.firebasestorage.app",
+    messagingSenderId: "971833627467",
+    appId: "1:971833627467:web:ee2185a7d867ee7efa0ece",
+    measurementId: "G-WRSN8LGELW"
+  };
+
+  let db = null;
+  let firebaseReady = false;
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    firebaseReady = true;
+    console.log("✅ Firebase conectado");
+  } catch(e) {
+    console.warn("⚠️ Firebase no configurado. Usando modo local.", e);
+  }
+
+  window.__db = db;
+  window.__firebaseReady = firebaseReady;
+  window.__fbFns = { collection, doc, setDoc, getDocs, onSnapshot, deleteDoc, updateDoc, addDoc, query, orderBy, where };
+</script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #C9E4D3;
+  --warm-white: #F5EFE6;
+  --blush: #EDD8C8;
+  --rose: #D4A892;
+  --rose-dark: #BE7D62;
+  --coral: #853499;
+  --coral-deep: #6A2280;
+  --teal: #2E8070;
+  --teal-light: #D4EDE8;
+  --teal-dark: #1E5E52;
+  --gold: #B8922A;
+  --gold-light: #F5E8C0;
+  --text-primary: #1A1410;
+  --text-secondary: #575757;
+  --text-muted: #8A7A72;
+  --border: #D4C8BC;
+  --border-light: #E0D6CC;
+  --shadow-sm: 0 1px 4px rgba(26,20,16,0.10);
+  --shadow-md: 0 4px 18px rgba(26,20,16,0.13);
+  --shadow-lg: 0 12px 44px rgba(26,20,16,0.18);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'Playfair Display', serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--text-primary);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/* ── Login ─────────────────────────────────────── */
+#login-screen {
+  position: fixed; inset: 0;
+  background: linear-gradient(135deg, #FDF6EE 0%, #F5E8DC 50%, #EDD9CC 100%);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  opacity: 1; transition: opacity .4s ease;
+}
+#login-screen.fade-out { opacity: 0; pointer-events: none; }
+
+.login-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 48px 40px;
+  width: 100%; max-width: 380px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  text-align: center;
+}
+.login-logo {
+  width: 64px; height: 64px;
+  background: linear-gradient(135deg, var(--coral), var(--rose-dark));
+  border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 28px;
+}
+.login-card h1 {
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.login-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 13px; }
+.login-input {
+  width: 100%; padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 14px;
+  background: var(--warm-white); color: var(--text-primary);
+  transition: border-color .2s;
+  margin-bottom: 12px;
+}
+.login-input:focus { outline: none; border-color: var(--coral); }
+.login-btn {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, var(--coral), var(--coral-deep));
+  color: white; border: none; border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: opacity .2s, transform .15s;
+  letter-spacing: .3px;
+}
+.login-btn:hover { opacity: .92; transform: translateY(-1px); }
+.login-btn:active { transform: translateY(0); }
+.login-error {
+  color: var(--coral-deep); font-size: 13px;
+  margin-top: 10px; display: none;
+}
+
+/* ── App Shell ──────────────────────────────────── */
+#app { display: none; min-height: 100vh; }
+#app.visible { display: block; }
+
+/* Header */
+.header {
+  background: white;
+  border-bottom: 1px solid var(--border-light);
+  padding: 0 24px;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+.header-brand {
+  display: flex; align-items: center; gap: 10px;
+}
+.header-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--coral), var(--rose-dark));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+}
+.header-title {
+  font-family: var(--font-display);
+  font-size: 16px; font-weight: 600;
+  color: var(--text-primary);
+}
+.header-sub { font-size: 11px; color: var(--text-muted); letter-spacing: .5px; text-transform: uppercase; }
+.header-actions { display: flex; align-items: center; gap: 10px; }
+
+.btn-primary {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, var(--coral), var(--coral-deep));
+  color: white; border: none; border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: opacity .2s, transform .1s;
+  display: flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+}
+.btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+
+.btn-secondary {
+  padding: 8px 14px;
+  background: var(--blush); color: var(--coral-deep);
+  border: 1px solid var(--rose); border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: background .15s;
+}
+.btn-secondary:hover { background: var(--rose); }
+
+/* Main layout */
+.main { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+
+/* ── Alerts Panel ───────────────────────────────── */
+.alerts-panel {
+  margin-bottom: 28px;
+}
+.alerts-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+.alerts-title {
+  font-size: 11px; font-weight: 600; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--text-secondary);
+}
+.alerts-count {
+  background: var(--coral);
+  color: white; font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+}
+.alerts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.alert-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--coral);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: box-shadow .2s;
+}
+.alert-card:hover { box-shadow: var(--shadow-sm); }
+.alert-content { flex: 1; }
+.alert-traveler {
+  font-weight: 600; font-size: 14px; color: var(--text-primary);
+  margin-bottom: 2px;
+}
+.alert-message {
+  font-size: 13px; color: var(--text-secondary);
+}
+.alert-date {
+  font-size: 12px; color: var(--text-muted);
+  background: var(--gold-light); padding: 3px 10px; border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* ── Stats Cards ────────────────────────────────── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s, box-shadow .2s;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.stat-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.stat-value {
+  font-size: 28px; font-weight: 600; color: var(--coral);
+  font-family: var(--font-display);
+}
+
+/* ── Tabs ───────────────────────────────────────── */
+.tabs {
+  display: flex; gap: 8px; margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+.tab-btn {
+  padding: 10px 20px;
+  background: transparent; border: none;
+  font-family: var(--font-body); font-size: 14px; font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer; transition: color .2s, border-color .2s;
+  border-bottom: 2px solid transparent;
+  position: relative; top: 1px;
+}
+.tab-btn.active {
+  color: var(--coral);
+  border-bottom-color: var(--coral);
+  font-weight: 600;
+}
+.tab-btn:hover { color: var(--text-primary); }
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ── Travelers Grid ─────────────────────────────── */
+.travelers-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.traveler-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s;
+}
+.traveler-card:hover { box-shadow: var(--shadow-md); }
+
+.traveler-header {
+  padding: 16px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer;
+  transition: background .15s;
+}
+.traveler-header:hover { background: var(--warm-white); }
+
+.traveler-info { flex: 1; }
+.traveler-name-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.traveler-name {
+  font-size: 15px; font-weight: 600; color: var(--text-primary);
+}
+.traveler-code {
+  font-size: 11px; font-weight: 600; letter-spacing: .5px;
+  background: var(--blush); color: var(--coral-deep);
+  padding: 3px 8px; border-radius: 6px;
+}
+.traveler-summary {
+  font-size: 13px; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.traveler-summary span {
+  display: flex; align-items: center; gap: 4px;
+}
+
+.traveler-actions { display: flex; align-items: center; gap: 8px; }
+.traveler-actions button {
+  padding: 7px 12px;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: opacity .2s;
+}
+.traveler-actions button:hover { opacity: .85; }
+.btn-edit { background: var(--blush); color: var(--coral-deep); }
+.btn-delete { background: var(--rose); color: white; }
+
+.traveler-body {
+  border-top: 1px solid var(--border-light);
+  padding: 20px;
+  display: none;
+  background: var(--warm-white);
+}
+.traveler-card.expanded .traveler-body { display: block; }
+
+.pkg-item {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.pkg-item:last-child { margin-bottom: 0; }
+.pkg-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 10px;
+}
+.pkg-type {
+  font-size: 13px; font-weight: 600;
+  background: var(--coral); color: white;
+  padding: 4px 10px; border-radius: 6px;
+}
+.pkg-reserva {
+  font-size: 12px; color: var(--text-muted);
+  background: var(--gold-light); padding: 3px 8px; border-radius: 5px;
+}
+.pkg-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  font-size: 13px; color: var(--text-secondary);
+}
+.pkg-field { display: flex; flex-direction: column; }
+.pkg-label {
+  font-size: 11px; font-weight: 600; letter-spacing: .5px;
+  text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 3px;
+}
+.pkg-value { color: var(--text-primary); }
+
+/* ── Modal ──────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2000;
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: white;
+  border-radius: var(--radius-lg);
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+.modal-header {
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0;
+  background: white;
+  z-index: 10;
+}
+.modal-title {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 600;
+  color: var(--text-primary);
+}
+.modal-close {
+  background: none; border: none;
+  font-size: 24px; color: var(--text-muted);
+  cursor: pointer; transition: color .2s;
+}
+.modal-close:hover { color: var(--text-primary); }
+
+.modal-body { padding: 24px 28px; }
+.modal-footer {
+  padding: 18px 28px;
+  border-top: 1px solid var(--border-light);
+  display: flex; gap: 10px; justify-content: flex-end;
+  position: sticky; bottom: 0;
+  background: white;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+.form-group label {
+  display: block;
+  font-size: 13px; font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%; padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 14px;
+  background: var(--warm-white); color: var(--text-primary);
+  transition: border-color .2s;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none; border-color: var(--coral);
+}
+.form-group textarea { resize: vertical; min-height: 80px; }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+.form-row.full { grid-template-columns: 1fr; }
+
+.pkg-form-block {
+  background: var(--warm-white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin-bottom: 16px;
+  position: relative;
+}
+.pkg-form-remove {
+  position: absolute; top: 10px; right: 10px;
+  background: var(--rose); color: white;
+  border: none; border-radius: 50%;
+  width: 26px; height: 26px;
+  font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .2s;
+}
+.pkg-form-remove:hover { opacity: .85; }
+
+.btn-add-pkg {
+  width: 100%;
+  padding: 12px;
+  background: var(--teal-light);
+  color: var(--teal-dark);
+  border: 1.5px dashed var(--teal);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background .2s;
+}
+.btn-add-pkg:hover { background: var(--teal); color: white; }
+
+/* Calculated field indicator */
+.calculated-field {
+  background: var(--gold-light) !important;
+  border-color: var(--gold) !important;
+  cursor: not-allowed;
+}
+.calculated-field-label {
+  color: var(--gold) !important;
+}
+.calculated-field-hint {
+  font-size: 11px;
+  color: var(--gold);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* ── Empty State ────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.empty-state-icon {
+  font-size: 48px; margin-bottom: 16px; opacity: .5;
+}
+.empty-state-text {
+  font-size: 15px; margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+  .form-row { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- LOGIN SCREEN -->
+<!-- ══════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">✈️</div>
+    <h1>Armo Tu Viaje Mágico</h1>
+    <p>Ingresá tu contraseña</p>
+    <input type="password" id="login-password" class="login-input" placeholder="Contraseña">
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="login-error">Contraseña incorrecta</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- APP -->
+<!-- ══════════════════════════════════════════════════ -->
+<div id="app">
+  <header class="header">
+    <div class="header-brand">
+      <div class="header-icon">✈️</div>
+      <div>
+        <div class="header-title">Armo Tu Viaje Mágico</div>
+        <div class="header-sub">Gestión de viajeros</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-primary" onclick="openAddTraveler()">
+        <span>➕</span>
+        <span>Nuevo viajero</span>
+      </button>
+      <button class="btn-secondary" onclick="showFirebaseConfig()">⚙️</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Alerts -->
+    <div class="alerts-panel" id="alerts-panel" style="display:none;">
+      <div class="alerts-header">
+        <div class="alerts-title">Alertas activas</div>
+        <div class="alerts-count" id="alerts-count">0</div>
+      </div>
+      <div class="alerts-grid" id="alerts-grid"></div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-label">Viajeros activos</div>
+        <div class="stat-value" id="stat-active">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Próximos 7 días</div>
+        <div class="stat-value" id="stat-upcoming">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Con pagos pendientes</div>
+        <div class="stat-value" id="stat-payments">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pasados</div>
+        <div class="stat-value" id="stat-past">0</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="active">Activos</button>
+      <button class="tab-btn" data-tab="past">Pasados</button>
+    </div>
+
+    <!-- Travelers -->
+    <div class="tab-content active" id="tab-active">
+      <div class="travelers-grid" id="active-travelers"></div>
+    </div>
+    <div class="tab-content" id="tab-past">
+      <div class="travelers-grid" id="past-travelers"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- MODAL: ADD/EDIT TRAVELER -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="traveler-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-title">Nuevo viajero</h2>
+      <button class="modal-close" onclick="closeModal('traveler-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nombre completo *</label>
+        <input type="text" id="f-name" placeholder="Ej: Juan Pérez">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Código viajero</label>
+          <input type="text" id="f-code" placeholder="V0101">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="f-email" placeholder="correo@ejemplo.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Notas</label>
+        <textarea id="f-notes" placeholder="Observaciones..."></textarea>
+      </div>
+
+      <hr style="border:none; border-top:1px solid var(--border-light); margin:24px 0;">
+      <h3 style="font-size:15px; font-weight:600; margin-bottom:14px;">Paquetes</h3>
+      <div id="packages-forms"></div>
+      <button class="btn-add-pkg" onclick="addPkgForm()">+ Agregar otro paquete</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('traveler-modal')">Cancelar</button>
+      <button class="btn-primary" onclick="saveTraveler()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- MODAL: CONFIRM -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <h2 class="modal-title" id="confirm-title">Confirmar</h2>
+      <button class="modal-close" onclick="closeModal('confirm-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-msg"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('confirm-modal')">Cancelar</button>
+      <button class="btn-primary" id="confirm-btn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- MODAL: FIREBASE CONFIG -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="firebase-modal">
+  <div class="modal" style="max-width:500px;">
+    <div class="modal-header">
+      <h2 class="modal-title">Configuración Firebase</h2>
+      <button class="modal-close" onclick="closeModal('firebase-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">
+        Estos valores se guardan localmente. Para persistencia total, reemplazá los valores en el HTML.
+      </p>
+      <div class="form-group">
+        <label>API Key</label>
+        <input type="text" id="fc-apikey" placeholder="AIza...">
+      </div>
+      <div class="form-group">
+        <label>Project ID</label>
+        <input type="text" id="fc-projectid" placeholder="mi-proyecto-123">
+      </div>
+      <div class="form-group">
+        <label>Auth Domain</label>
+        <input type="text" id="fc-authdomain" placeholder="mi-proyecto-123.firebaseapp.com">
+      </div>
+      <div class="form-group">
+        <label>App ID</label>
+        <input type="text" id="fc-appid" placeholder="1:123456:web:...">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('firebase-modal')">Cancelar</button>
+      <button class="btn-primary" onclick="saveFirebaseConfig()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// GLOBALS & CONFIG
+// ═══════════════════════════════════════════════════════════
+const LS_PW = 'atvm_pw';
+const LS_DATA = 'atvm_data';
+const LS_FC = 'atvm_firebase_config';
+const CORRECT_PASSWORD = 'armo2025';
+
+let travelers = [];
+let editingId = null;
+let pkgCount = 0;
+
+// ═══════════════════════════════════════════════════════════
+// AUTHENTICATION
+// ═══════════════════════════════════════════════════════════
+function checkAuth() {
+  const saved = localStorage.getItem(LS_PW);
+  if (saved === CORRECT_PASSWORD) {
+    showApp();
+  }
+}
+
+function doLogin() {
+  const pw = document.getElementById('login-password').value;
+  if (pw === CORRECT_PASSWORD) {
+    localStorage.setItem(LS_PW, pw);
+    showApp();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+function showApp() {
+  document.getElementById('login-screen').classList.add('fade-out');
+  setTimeout(() => {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    loadData();
+  }, 400);
+}
+
+// ═══════════════════════════════════════════════════════════
+// DATA PERSISTENCE (Firebase + LocalStorage)
+// ═══════════════════════════════════════════════════════════
+async function loadData() {
+  if (window.__firebaseReady && window.__db) {
+    try {
+      const { collection, getDocs, onSnapshot } = window.__fbFns;
+      const q = collection(window.__db, 'travelers');
+      
+      onSnapshot(q, (snap) => {
+        travelers = [];
+        snap.forEach(doc => {
+          travelers.push({ ...doc.data(), id: doc.id });
+        });
+        renderTravelers();
+        updateStats();
+        computeAndRenderAlerts();
+      });
+    } catch (e) {
+      console.warn('Error cargando desde Firebase, usando localStorage:', e);
+      loadLocalData();
+    }
+  } else {
+    loadLocalData();
+  }
+}
+
+function loadLocalData() {
+  const raw = localStorage.getItem(LS_DATA);
+  travelers = raw ? JSON.parse(raw) : [];
+  renderTravelers();
+  updateStats();
+  computeAndRenderAlerts();
+}
+
+async function saveTravelerToDb(traveler) {
+  if (window.__firebaseReady && window.__db) {
+    try {
+      const { doc, setDoc } = window.__fbFns;
+      await setDoc(doc(window.__db, 'travelers', traveler.id), traveler);
+      console.log('✅ Guardado en Firebase:', traveler.id);
+    } catch (e) {
+      console.warn('Error guardando en Firebase, usando localStorage:', e);
+      saveLocalTraveler(traveler);
+    }
+  } else {
+    saveLocalTraveler(traveler);
+  }
+}
+
+function saveLocalTraveler(traveler) {
+  const idx = travelers.findIndex(t => t.id === traveler.id);
+  if (idx >= 0) travelers[idx] = traveler;
+  else travelers.push(traveler);
+  localStorage.setItem(LS_DATA, JSON.stringify(travelers));
+}
+
+async function deleteTravelerFromDb(id) {
+  if (window.__firebaseReady && window.__db) {
+    try {
+      const { doc, deleteDoc } = window.__fbFns;
+      await deleteDoc(doc(window.__db, 'travelers', id));
+      console.log('🗑️ Eliminado de Firebase:', id);
+    } catch (e) {
+      console.warn('Error eliminando de Firebase, usando localStorage:', e);
+      deleteLocalTraveler(id);
+    }
+  } else {
+    deleteLocalTraveler(id);
+  }
+}
+
+function deleteLocalTraveler(id) {
+  travelers = travelers.filter(t => t.id !== id);
+  localStorage.setItem(LS_DATA, JSON.stringify(travelers));
+}
+
+// ═══════════════════════════════════════════════════════════
+// UTILITY FUNCTIONS
+// ═══════════════════════════════════════════════════════════
+function generateId() {
+  return 'T' + Date.now() + Math.random().toString(36).substr(2,5);
+}
+
+// Parse DD/MM/YYYY to Date
+function parseDate(str) {
+  if (!str) return null;
+  const [d, m, y] = str.split('/').map(x => parseInt(x));
+  if (!d || !m || !y) return null;
+  return new Date(y, m - 1, d);
+}
+
+// Format Date to DD/MM/YYYY
+function formatDate(date) {
+  if (!date) return '';
+  const d = String(date.getDate()).padStart(2, '0');
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const y = date.getFullYear();
+  return `${d}/${m}/${y}`;
+}
+
+// Convert YYYY-MM-DD to DD/MM/YYYY
+function convertToDisplay(isoDate) {
+  if (!isoDate) return '';
+  const [y, m, d] = isoDate.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+// Convert DD/MM/YYYY to YYYY-MM-DD
+function convertToISO(displayDate) {
+  if (!displayDate) return '';
+  const [d, m, y] = displayDate.split('/');
+  return `${y}-${m}-${d}`;
+}
+
+function diffDays(date) {
+  if (!date) return null;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(date);
+  target.setHours(0, 0, 0, 0);
+  return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+}
+
+function isTravelerPast(t) {
+  if (t.manualPast) return true;
+  const pkgs = t.packages || [];
+  if (!pkgs.length) return false;
+  const lastCheckout = pkgs
+    .map(p => p.checkout ? parseDate(convertToDisplay(p.checkout)) : null)
+    .filter(d => d)
+    .sort((a, b) => b - a)[0];
+  if (!lastCheckout) return false;
+  return diffDays(lastCheckout) < 0;
+}
+
+// ═══════════════════════════════════════════════════════════
+// DATE CALCULATION FUNCTIONS
+// ═══════════════════════════════════════════════════════════
+
+// Calculate payment deadline based on package type and check-in date
+function calculatePaymentDeadline(checkinDate, packageType) {
+  if (!checkinDate) return '';
+  
+  const checkin = new Date(checkinDate);
+  const type = packageType.toLowerCase();
+  
+  let daysBeforeCheckin = 0;
+  if (type === 'disney') {
+    daysBeforeCheckin = 30;
+  } else if (type === 'universal') {
+    daysBeforeCheckin = 45;
+  } else {
+    // For "otros" packages, no automatic payment deadline
+    return '';
+  }
+  
+  const paymentDate = new Date(checkin);
+  paymentDate.setDate(paymentDate.getDate() - daysBeforeCheckin);
+  
+  return formatDate(paymentDate);
+}
+
+// Calculate dining reservation date (60 days before Disney check-in)
+function calculateDiningDate(checkinDate, packageType) {
+  if (!checkinDate || packageType.toLowerCase() !== 'disney') return '';
+  
+  const checkin = new Date(checkinDate);
+  const diningDate = new Date(checkin);
+  diningDate.setDate(diningDate.getDate() - 60);
+  
+  return formatDate(diningDate);
+}
+
+// Calculate Lightning Lane date (7 days before Disney check-in)
+function calculateLightningLaneDate(checkinDate, packageType) {
+  if (!checkinDate || packageType.toLowerCase() !== 'disney') return '';
+  
+  const checkin = new Date(checkinDate);
+  const llDate = new Date(checkin);
+  llDate.setDate(llDate.getDate() - 7);
+  
+  return formatDate(llDate);
+}
+
+// Auto-generate extras string with calculated dates
+function generateExtrasString(checkinDate, packageType) {
+  const type = packageType.toLowerCase();
+  const extras = [];
+  
+  if (type === 'disney') {
+    const dining = calculateDiningDate(checkinDate, packageType);
+    const ll = calculateLightningLaneDate(checkinDate, packageType);
+    
+    if (dining) extras.push(`Dining: ${dining}`);
+    if (ll) extras.push(`Lightning Lane: ${ll}`);
+  }
+  
+  return extras.join(' | ');
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER TRAVELERS
+// ═══════════════════════════════════════════════════════════
+function renderTravelers() {
+  const active = travelers.filter(t => !isTravelerPast(t));
+  const past = travelers.filter(t => isTravelerPast(t));
+
+  renderList('active-travelers', active);
+  renderList('past-travelers', past);
+}
+
+function renderList(containerId, list) {
+  const c = document.getElementById(containerId);
+  if (!list.length) {
+    c.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <div class="empty-state-text">No hay viajeros en esta categoría</div>
+      </div>`;
+    return;
+  }
+
+  c.innerHTML = list.map(t => {
+    const pkgs = t.packages || [];
+    const totalPrecio = pkgs.reduce((s, p) => s + (p.precio || 0), 0);
+    const totalComision = pkgs.reduce((s, p) => s + (p.comision || 0), 0);
+    const pkgsCount = pkgs.length;
+
+    const nextPayment = pkgs
+      .map(p => p.payBefore ? parseDate(p.payBefore) : null)
+      .filter(d => d)
+      .sort((a, b) => a - b)[0];
+    const paymentStr = nextPayment ? formatDate(nextPayment) : '—';
+
+    const pkgsHTML = pkgs.map(p => {
+      const typeDisplay = typeof p.type === 'string' && ['disney', 'universal'].includes(p.type.toLowerCase())
+        ? (p.type.toLowerCase() === 'disney' ? '🏰 Disney' : '🎡 Universal')
+        : `📦 ${p.type}`;
+
+      return `
+        <div class="pkg-item">
+          <div class="pkg-header">
+            <div class="pkg-type">${typeDisplay}</div>
+            ${p.reserva ? `<div class="pkg-reserva">Reserva: ${p.reserva}</div>` : ''}
+          </div>
+          <div class="pkg-row">
+            ${p.checkin ? `
+              <div class="pkg-field">
+                <div class="pkg-label">Check-in</div>
+                <div class="pkg-value">${convertToDisplay(p.checkin)}</div>
+              </div>
+            ` : ''}
+            ${p.checkout ? `
+              <div class="pkg-field">
+                <div class="pkg-label">Check-out</div>
+                <div class="pkg-value">${convertToDisplay(p.checkout)}</div>
+              </div>
+            ` : ''}
+            ${p.precio ? `
+              <div class="pkg-field">
+                <div class="pkg-label">Precio</div>
+                <div class="pkg-value">USD ${p.precio.toFixed(2)}</div>
+              </div>
+            ` : ''}
+            ${p.comision ? `
+              <div class="pkg-field">
+                <div class="pkg-label">Comisión</div>
+                <div class="pkg-value">USD ${p.comision.toFixed(2)}</div>
+              </div>
+            ` : ''}
+            ${p.payBefore ? `
+              <div class="pkg-field">
+                <div class="pkg-label">Pagar antes</div>
+                <div class="pkg-value">${p.payBefore}</div>
+              </div>
+            ` : ''}
+            ${p.extras ? `
+              <div class="pkg-field" style="grid-column: 1 / -1;">
+                <div class="pkg-label">Extras</div>
+                <div class="pkg-value">${p.extras}</div>
+              </div>
+            ` : ''}
+            ${p.eventWarning ? `
+              <div class="pkg-field" style="grid-column: 1 / -1;">
+                <div class="pkg-label">Evento especial</div>
+                <div class="pkg-value">${getEventLabel(p.eventWarning)}</div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div class="traveler-card ${t._expanded ? 'expanded' : ''}" data-id="${t.id}">
+        <div class="traveler-header" onclick="toggleTraveler('${t.id}')">
+          <div class="traveler-info">
+            <div class="traveler-name-row">
+              <div class="traveler-name">${t.name}</div>
+              ${t.code ? `<div class="traveler-code">${t.code}</div>` : ''}
+            </div>
+            <div class="traveler-summary">
+              <span>📦 ${pkgsCount} paquete${pkgsCount !== 1 ? 's' : ''}</span>
+              <span>💰 USD ${totalPrecio.toFixed(2)}</span>
+              <span>💼 USD ${totalComision.toFixed(2)}</span>
+              <span>⏰ ${paymentStr}</span>
+            </div>
+          </div>
+          <div class="traveler-actions">
+            <button class="btn-edit" onclick="event.stopPropagation(); openEditTraveler('${t.id}')">Editar</button>
+            <button class="btn-delete" onclick="event.stopPropagation(); confirmDelete('${t.id}')">Eliminar</button>
+          </div>
+        </div>
+        <div class="traveler-body">
+          ${t.email ? `<p style="margin-bottom:8px;"><strong>Email:</strong> ${t.email}</p>` : ''}
+          ${t.notes ? `<p style="margin-bottom:16px;"><strong>Notas:</strong> ${t.notes}</p>` : ''}
+          ${pkgsHTML}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function getEventLabel(ev) {
+  if (ev === 'halloween') return '🎃 Halloween';
+  if (ev === 'navidad') return '🎄 Navidad';
+  if (ev === 'otros') return '🎉 Otros';
+  return '';
+}
+
+function toggleTraveler(id) {
+  const t = travelers.find(x => x.id === id);
+  if (t) {
+    t._expanded = !t._expanded;
+    renderTravelers();
+  }
+}
+
+function confirmDelete(id) {
+  showConfirm(
+    'Eliminar viajero',
+    '¿Estás segura de que querés eliminar este viajero? Esta acción no se puede deshacer.',
+    async () => {
+      await deleteTravelerFromDb(id);
+      renderTravelers();
+      updateStats();
+      computeAndRenderAlerts();
+    }
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════════
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + tab).classList.add('active');
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// ALERTS
+// ═══════════════════════════════════════════════════════════
+function computeAndRenderAlerts() {
+  const alerts = [];
+  const active = travelers.filter(t => !isTravelerPast(t));
+
+  active.forEach(t => {
+    (t.packages || []).forEach(p => {
+      // Payment alerts
+      if (p.payBefore) {
+        const d = diffDays(parseDate(p.payBefore));
+        if (d !== null && d >= 0 && d <= 7) {
+          alerts.push({
+            traveler: t.name,
+            message: `Pago pendiente (${p.type})`,
+            date: p.payBefore,
+            diff: d
+          });
+        }
+      }
+
+      // Dining alerts (60 days before Disney check-in)
+      if (p.type && p.type.toLowerCase() === 'disney' && p.checkin) {
+        const checkin = new Date(p.checkin);
+        const diningDate = new Date(checkin);
+        diningDate.setDate(diningDate.getDate() - 60);
+        const d = diffDays(diningDate);
+        if (d !== null && d >= 0 && d <= 7) {
+          alerts.push({
+            traveler: t.name,
+            message: `Reservar Dining (Disney)`,
+            date: formatDate(diningDate),
+            diff: d
+          });
+        }
+      }
+
+      // Lightning Lane alerts (7 days before Disney check-in)
+      if (p.type && p.type.toLowerCase() === 'disney' && p.checkin) {
+        const checkin = new Date(p.checkin);
+        const llDate = new Date(checkin);
+        llDate.setDate(llDate.getDate() - 7);
+        const d = diffDays(llDate);
+        if (d !== null && d >= 0 && d <= 7) {
+          alerts.push({
+            traveler: t.name,
+            message: `Lightning Lane disponible (Disney)`,
+            date: formatDate(llDate),
+            diff: d
+          });
+        }
+      }
+
+      // Event warnings
+      if (p.eventWarning && p.checkin) {
+        const checkin = parseDate(convertToDisplay(p.checkin));
+        const d = diffDays(checkin);
+        if (d !== null && d >= 0 && d <= 30) {
+          alerts.push({
+            traveler: t.name,
+            message: `Evento: ${getEventLabel(p.eventWarning)}`,
+            date: convertToDisplay(p.checkin),
+            diff: d
+          });
+        }
+      }
+    });
+  });
+
+  const panel = document.getElementById('alerts-panel');
+  if (!alerts.length) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = 'block';
+  document.getElementById('alerts-count').textContent = alerts.length;
+  document.getElementById('alerts-grid').innerHTML = alerts.map(a => `
+    <div class="alert-card">
+      <div class="alert-content">
+        <div class="alert-traveler">${a.traveler}</div>
+        <div class="alert-message">${a.message}</div>
+      </div>
+      <div class="alert-date">${a.date} (${a.diff}d)</div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════════════
+function updateStats() {
+  const active = travelers.filter(t => !isTravelerPast(t));
+  const past = travelers.filter(t => isTravelerPast(t));
+  const upcoming = active.filter(t => (t.packages||[]).some(p => {
+    if (!p.payBefore) return false;
+    const d = diffDays(parseDate(p.payBefore));
+    return d >= 0 && d <= 7;
+  }));
+  const withPayment = active.filter(t => (t.packages||[]).some(p => p.payBefore));
+
+  document.getElementById('stat-active').textContent = active.length;
+  document.getElementById('stat-upcoming').textContent = upcoming.length;
+  document.getElementById('stat-payments').textContent = withPayment.length;
+  document.getElementById('stat-past').textContent = past.length;
+}
+
+// ═══════════════════════════════════════════════════════════
+// FORM: ADD / EDIT TRAVELER
+// ═══════════════════════════════════════════════════════════
+let pkgForms = [];
+
+function openAddTraveler() {
+  editingId = null;
+  pkgForms = [];
+  pkgCount = 0;
+  document.getElementById('modal-title').textContent = 'Nuevo viajero';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-code').value = autoNextCode();
+  document.getElementById('f-email').value = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('packages-forms').innerHTML = '';
+  addPkgForm();
+  openModal('traveler-modal');
+}
+
+function autoNextCode() {
+  const codes = travelers.map(t => t.code || '').filter(c => c.startsWith('V0'));
+  const nums = codes.map(c => parseInt(c.replace(/[^0-9]/g,''))).filter(n => !isNaN(n));
+  const max = nums.length ? Math.max(...nums) : 107;
+  return 'V0' + (max + 1);
+}
+
+function openEditTraveler(id) {
+  const t = travelers.find(x => x.id === id);
+  if (!t) return;
+  editingId = id;
+  pkgForms = [];
+  pkgCount = 0;
+  document.getElementById('modal-title').textContent = 'Editar viajero';
+  document.getElementById('f-name').value = t.name || '';
+  document.getElementById('f-code').value = t.code || '';
+  document.getElementById('f-email').value = t.email || '';
+  document.getElementById('f-notes').value = t.notes || '';
+  document.getElementById('packages-forms').innerHTML = '';
+  (t.packages || []).forEach(p => addPkgForm(p));
+  if ((t.packages || []).length === 0) addPkgForm();
+  openModal('traveler-modal');
+}
+
+function addPkgForm(pkg) {
+  const idx = pkgCount++;
+  const id = `pkg-${idx}`;
+  pkgForms.push(id);
+  const c = pkg || {};
+  const isOtros = c.type && !['disney','universal'].includes(c.type.toLowerCase()) ? c.type : '';
+  
+  const html = `
+  <div class="pkg-form-block" id="${id}">
+    <button class="pkg-form-remove" onclick="removePkgForm('${id}')">✕</button>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tipo de paquete</label>
+        <select data-field="type" onchange="handlePackageTypeChange('${id}')">
+          <option value="disney"    ${c.type==='disney' || !c.type ?'selected':''}>🏰 Disney</option>
+          <option value="universal" ${c.type==='universal'?'selected':''}>🎡 Universal</option>
+          <option value="otros"     ${isOtros ?'selected':''}>📦 Otros</option>
+        </select>
+        <input type="text" data-field="type-custom" placeholder="Ej: Paquete Expedia, Entradas..."
+          value="${isOtros}"
+          style="margin-top:6px; display:${isOtros ? 'block' : 'none'}">
+      </div>
+      <div class="form-group">
+        <label>Código de reserva</label>
+        <input type="text" data-field="reserva" value="${c.reserva||''}" placeholder="Ej: 41585277">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Check-in</label>
+        <input type="date" data-field="checkin" value="${c.checkin||''}" onchange="handleCheckinChange('${id}')">
+      </div>
+      <div class="form-group">
+        <label>Check-out</label>
+        <input type="date" data-field="checkout" value="${c.checkout||''}">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Precio total (USD)</label>
+        <input type="number" data-field="precio" value="${c.precio||''}" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Comisión</label>
+        <input type="number" data-field="comision" value="${c.comision||''}" placeholder="0.00" step="0.01">
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label class="calculated-field-label">Pagar antes de (calculado automáticamente)</label>
+        <input type="text" data-field="payBefore-display" value="${c.payBefore||''}" 
+          class="calculated-field" readonly>
+        <input type="hidden" data-field="payBefore" value="${c.payBefore||''}">
+        <div class="calculated-field-hint">🤖 Disney: 30 días antes | Universal: 45 días antes</div>
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label class="calculated-field-label">Extras / Recordatorios (calculado automáticamente)</label>
+        <input type="text" data-field="extras" value="${c.extras||''}" 
+          class="calculated-field" readonly>
+        <div class="calculated-field-hint">🤖 Disney: Dining (60 días antes) | Lightning Lane (7 días antes)</div>
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label>⚠ Avisar por evento especial</label>
+        <select data-field="eventWarning">
+          <option value=""       ${!c.eventWarning?'selected':''}>— Sin recordatorio —</option>
+          <option value="halloween" ${c.eventWarning==='halloween'?'selected':''}>🎃 Halloween</option>
+          <option value="navidad"   ${c.eventWarning==='navidad'?'selected':''}>🎄 Navidad</option>
+          <option value="otros"     ${c.eventWarning==='otros'?'selected':''}>🎉 Otros</option>
+        </select>
+      </div>
+    </div>
+  </div>`;
+  
+  document.getElementById('packages-forms').insertAdjacentHTML('beforeend', html);
+}
+
+function handlePackageTypeChange(blockId) {
+  const block = document.getElementById(blockId);
+  const typeSelect = block.querySelector('[data-field="type"]');
+  const customInput = block.querySelector('[data-field="type-custom"]');
+  
+  if (typeSelect.value === 'otros') {
+    customInput.style.display = 'block';
+  } else {
+    customInput.style.display = 'none';
+    customInput.value = '';
+  }
+  
+  // Recalculate dates when package type changes
+  handleCheckinChange(blockId);
+}
+
+function handleCheckinChange(blockId) {
+  const block = document.getElementById(blockId);
+  const checkinInput = block.querySelector('[data-field="checkin"]');
+  const typeSelect = block.querySelector('[data-field="type"]');
+  const customInput = block.querySelector('[data-field="type-custom"]');
+  const payBeforeDisplay = block.querySelector('[data-field="payBefore-display"]');
+  const payBeforeHidden = block.querySelector('[data-field="payBefore"]');
+  const extrasInput = block.querySelector('[data-field="extras"]');
+  
+  const checkinDate = checkinInput.value;
+  if (!checkinDate) {
+    payBeforeDisplay.value = '';
+    payBeforeHidden.value = '';
+    extrasInput.value = '';
+    return;
+  }
+  
+  // Determine package type
+  let packageType = typeSelect.value;
+  if (packageType === 'otros') {
+    packageType = customInput.value || 'otros';
+  }
+  
+  // Calculate payment deadline
+  const paymentDeadline = calculatePaymentDeadline(checkinDate, packageType);
+  payBeforeDisplay.value = paymentDeadline;
+  payBeforeHidden.value = paymentDeadline;
+  
+  // Generate extras string with automatic dates
+  const extrasStr = generateExtrasString(checkinDate, packageType);
+  extrasInput.value = extrasStr;
+}
+
+function removePkgForm(id) {
+  document.getElementById(id)?.remove();
+  pkgForms = pkgForms.filter(x => x !== id);
+}
+
+async function saveTraveler() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { alert('El nombre es obligatorio'); return; }
+
+  // Collect packages
+  const packages = [];
+  document.querySelectorAll('#packages-forms .pkg-form-block').forEach(block => {
+    const get = (f) => block.querySelector(`[data-field="${f}"]`)?.value || '';
+    const ci = get('checkin');
+    const co = get('checkout');
+    const rawType = get('type');
+    const finalType = rawType === 'otros' ? (get('type-custom') || 'Otros') : rawType;
+    
+    packages.push({
+      type: finalType,
+      reserva: get('reserva'),
+      checkin: ci,
+      checkout: co,
+      dates: ci && co ? `${convertToDisplay(ci)} - ${convertToDisplay(co)}` : '',
+      precio: parseFloat(get('precio')) || 0,
+      comision: parseFloat(get('comision')) || 0,
+      payBefore: get('payBefore'),
+      extras: get('extras'),
+      eventWarning: get('eventWarning') || ''
+    });
+  });
+
+  const id = editingId || generateId();
+  const traveler = {
+    id, name,
+    code: document.getElementById('f-code').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+    notes: document.getElementById('f-notes').value.trim(),
+    packages,
+    manualPast: editingId ? (travelers.find(t=>t.id===editingId)?.manualPast || false) : false,
+    _expanded: false
+  };
+
+  await saveTravelerToDb(traveler);
+  closeModal('traveler-modal');
+  renderTravelers();
+  updateStats();
+  computeAndRenderAlerts();
+}
+
+// ═══════════════════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function showConfirm(title, msg, onConfirm) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-msg').textContent = msg;
+  const btn = document.getElementById('confirm-btn');
+  btn.onclick = () => { closeModal('confirm-modal'); onConfirm(); };
+  openModal('confirm-modal');
+}
+
+function showFirebaseConfig() { openModal('firebase-modal'); }
+
+function saveFirebaseConfig() {
+  const config = {
+    apiKey: document.getElementById('fc-apikey').value.trim(),
+    projectId: document.getElementById('fc-projectid').value.trim(),
+    authDomain: document.getElementById('fc-authdomain').value.trim(),
+    appId: document.getElementById('fc-appid').value.trim(),
+    storageBucket: document.getElementById('fc-projectid').value.trim() + '.appspot.com',
+    messagingSenderId: ''
+  };
+  localStorage.setItem(LS_FC, JSON.stringify(config));
+  closeModal('firebase-modal');
+  alert('✅ Configuración guardada. Recargá la página y reemplazá los valores en el HTML para persistencia permanente.');
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════
+checkAuth();
+</script>
+</body>
+</html>
