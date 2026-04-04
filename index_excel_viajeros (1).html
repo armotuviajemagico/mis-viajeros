@@ -1,0 +1,1845 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Armo Tu Viaje Mágico</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+
+<!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+  import { getFirestore, collection, doc, setDoc, getDocs, onSnapshot, deleteDoc, updateDoc, addDoc, query, orderBy, where } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+  // ═══════════════════════════════════════════
+  // 🔧 CONFIGURACIÓN FIREBASE — Reemplazá estos valores con los tuyos
+  // ═══════════════════════════════════════════
+  const firebaseConfig = {
+    apiKey: "AIzaSyC0J2qWAqBJIhYqxfJww6ceYAq-ApP49PM",
+    authDomain: "mis-viajeros-86e05.firebaseapp.com",
+    projectId: "mis-viajeros-86e05",
+    storageBucket: "mis-viajeros-86e05.firebasestorage.app",
+    messagingSenderId: "971833627467",
+    appId: "1:971833627467:web:ee2185a7d867ee7efa0ece",
+    measurementId: "G-WRSN8LGELW"
+  };
+
+  let db = null;
+  let firebaseReady = false;
+
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    firebaseReady = true;
+    console.log("✅ Firebase conectado");
+  } catch(e) {
+    console.warn("⚠️ Firebase no configurado. Usando modo local.", e);
+  }
+
+  window.__db = db;
+  window.__firebaseReady = firebaseReady;
+  window.__fbFns = { collection, doc, setDoc, getDocs, onSnapshot, deleteDoc, updateDoc, addDoc, query, orderBy, where };
+</script>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #C9E4D3;
+  --warm-white: #F5EFE6;
+  --blush: #EDD8C8;
+  --rose: #D4A892;
+  --rose-dark: #BE7D62;
+  --coral: #853499;
+  --coral-deep: #6A2280;
+  --teal: #2E8070;
+  --teal-light: #D4EDE8;
+  --teal-dark: #1E5E52;
+  --gold: #B8922A;
+  --gold-light: #F5E8C0;
+  --text-primary: #1A1410;
+  --text-secondary: #575757;
+  --text-muted: #8A7A72;
+  --border: #D4C8BC;
+  --border-light: #E0D6CC;
+  --shadow-sm: 0 1px 4px rgba(26,20,16,0.10);
+  --shadow-md: 0 4px 18px rgba(26,20,16,0.13);
+  --shadow-lg: 0 12px 44px rgba(26,20,16,0.18);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'Playfair Display', serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--text-primary);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+/* ── Login ─────────────────────────────────────── */
+#login-screen {
+  position: fixed; inset: 0;
+  background: linear-gradient(135deg, #FDF6EE 0%, #F5E8DC 50%, #EDD9CC 100%);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  opacity: 1; transition: opacity .4s ease;
+}
+#login-screen.fade-out { opacity: 0; pointer-events: none; }
+
+.login-card {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: 48px 40px;
+  width: 100%; max-width: 380px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  text-align: center;
+}
+.login-logo {
+  width: 64px; height: 64px;
+  background: linear-gradient(135deg, var(--coral), var(--rose-dark));
+  border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 28px;
+}
+.login-card h1 {
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.login-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 13px; }
+.login-input {
+  width: 100%; padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 14px;
+  background: var(--warm-white); color: var(--text-primary);
+  transition: border-color .2s;
+  margin-bottom: 12px;
+}
+.login-input:focus { outline: none; border-color: var(--coral); }
+.login-btn {
+  width: 100%; padding: 13px;
+  background: linear-gradient(135deg, var(--coral), var(--coral-deep));
+  color: white; border: none; border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: opacity .2s, transform .15s;
+  letter-spacing: .3px;
+}
+.login-btn:hover { opacity: .92; transform: translateY(-1px); }
+.login-btn:active { transform: translateY(0); }
+.login-error {
+  color: var(--coral-deep); font-size: 13px;
+  margin-top: 10px; display: none;
+}
+
+/* ── App Shell ──────────────────────────────────── */
+#app { display: none; min-height: 100vh; }
+#app.visible { display: block; }
+
+/* Header */
+.header {
+  background: white;
+  border-bottom: 1px solid var(--border-light);
+  padding: 0 24px;
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+.header-brand {
+  display: flex; align-items: center; gap: 10px;
+}
+.header-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--coral), var(--rose-dark));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+}
+.header-title {
+  font-family: var(--font-display);
+  font-size: 16px; font-weight: 600;
+  color: var(--text-primary);
+}
+.header-sub { font-size: 11px; color: var(--text-muted); letter-spacing: .5px; text-transform: uppercase; }
+.header-actions { display: flex; align-items: center; gap: 10px; }
+
+.btn-primary {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, var(--coral), var(--coral-deep));
+  color: white; border: none; border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: opacity .2s, transform .1s;
+  display: flex; align-items: center; gap: 6px;
+  white-space: nowrap;
+}
+.btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+
+.btn-secondary {
+  padding: 8px 14px;
+  background: var(--blush); color: var(--coral-deep);
+  border: 1px solid var(--rose); border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: background .15s;
+}
+.btn-secondary:hover { background: var(--rose); }
+
+/* Main layout */
+.main { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+
+/* ── Alerts Panel ───────────────────────────────── */
+.alerts-panel {
+  margin-bottom: 28px;
+}
+.alerts-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+.alerts-title {
+  font-size: 11px; font-weight: 600; letter-spacing: 1.2px;
+  text-transform: uppercase; color: var(--text-secondary);
+}
+.alerts-count {
+  background: var(--coral);
+  color: white; font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+}
+.alerts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.alert-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--coral);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+  animation: slideIn .3s ease;
+  width: 100%;
+}
+.alert-card.urgent { border-left-color: #E53E3E; background: #FFFAFA; }
+.alert-card.soon   { border-left-color: var(--gold); background: #FFFDF5; }
+.alert-card.normal { border-left-color: var(--coral); }
+
+/* payment alerts — vivid pink for all payment types */
+.alert-card.pay-alert { border-left-color: #E8006A; background: linear-gradient(to right, #FFF0F6, #ffffff); border-color: #FFBDDA; }
+.alert-card.pay-alert.urgent { border-left-color: #C4004F; background: linear-gradient(to right, #FFE0EE, #fff8fb); border-color: #FF9AC8; }
+.alert-card.pay-alert.soon   { border-left-color: #E8006A; background: linear-gradient(to right, #FFF0F6, #ffffff); }
+
+@keyframes slideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+.alert-icon {
+  font-size: 20px; flex-shrink: 0;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px; background: var(--blush);
+}
+.alert-card.pay-alert .alert-icon   { background: #FFD6EB; }
+.alert-card.pay-alert .alert-type   { color: #C4004F; font-weight: 600; }
+.alert-card.lightning .alert-icon     { background: #FFF9E6; }
+.alert-card.dining .alert-icon        { background: #F0FFF4; }
+
+.alert-body { flex: 1; min-width: 0; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.alert-name { font-weight: 600; font-size: 14px; color: var(--text-primary); white-space: nowrap; }
+.alert-type { font-size: 12.5px; color: var(--text-secondary); }
+.alert-card.pay-alert .alert-type { color: #C4004F; font-weight: 600; }
+
+.alert-badge {
+  font-size: 11px; font-weight: 700;
+  padding: 4px 12px; border-radius: 20px;
+  white-space: nowrap; flex-shrink: 0; letter-spacing: .3px;
+}
+.alert-badge.urgent { background: #FEE2E2; color: #C53030; }
+.alert-badge.soon   { background: var(--gold-light); color: #92681A; }
+.alert-badge.normal { background: var(--teal-light); color: var(--teal-dark); }
+.alert-badge.pay-badge { background: #FFD6EB; color: #9B003D; font-weight: 700; }
+
+.alert-dismiss {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 15px; flex-shrink: 0;
+  padding: 4px; line-height: 1; border-radius: 50%;
+  transition: all .15s; width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+}
+.alert-dismiss:hover { color: var(--coral); background: var(--blush); }
+
+.no-alerts {
+  background: var(--teal-light);
+  border: 1px solid #C3E0DA;
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 10px;
+  color: var(--teal-dark); font-size: 13px;
+}
+
+/* ── Filters & Tabs ─────────────────────────────── */
+.controls {
+  display: flex; align-items: center; gap: 12px;
+  flex-wrap: wrap; margin-bottom: 20px;
+}
+.tabs {
+  display: flex; background: var(--blush);
+  border-radius: var(--radius-sm); padding: 3px;
+  border: 1px solid var(--border);
+}
+.tab {
+  padding: 7px 18px; border-radius: 6px;
+  border: none; background: none;
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  cursor: pointer; color: var(--text-secondary);
+  transition: all .2s; display: flex; align-items: center; gap: 6px;
+}
+.tab.active { background: white; color: var(--text-primary); box-shadow: var(--shadow-sm); font-weight: 600; }
+.tab-badge {
+  background: var(--rose); color: var(--coral-deep);
+  font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 20px;
+}
+.tab.active .tab-badge { background: var(--coral); color: white; }
+
+.search-box {
+  flex: 1; min-width: 180px; max-width: 280px;
+  position: relative;
+}
+.search-box input {
+  width: 100%; padding: 8px 12px 8px 34px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 13px;
+  background: white; color: var(--text-primary);
+  transition: border-color .2s;
+}
+.search-box input:focus { outline: none; border-color: var(--coral); }
+.search-icon {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-size: 14px; pointer-events: none;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 13px;
+  background: white; color: var(--text-primary);
+  cursor: pointer;
+}
+.filter-select:focus { outline: none; border-color: var(--coral); }
+
+/* ── Stats Bar ──────────────────────────────────── */
+.stats-bar {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; margin-bottom: 24px;
+}
+.stat-card {
+  background: #FBF7F2; border: 1.5px solid var(--border);
+  border-radius: var(--radius-md); padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+}
+.stat-value { font-size: 30px; font-weight: 800; color: var(--coral); line-height: 1; }
+.stat-label { font-size: 11px; color: var(--text-secondary); font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-top: 5px; }
+
+/* ── Traveler List ──────────────────────────────── */
+.travelers-list {
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+.traveler-group {
+  background: #FBF7F2;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s;
+}
+.traveler-group:hover { box-shadow: var(--shadow-md); }
+
+.traveler-header {
+  padding: 18px 22px;
+  display: flex; align-items: center; gap: 16px;
+  cursor: pointer;
+  border-bottom: 1.5px solid transparent;
+  transition: background .15s;
+}
+.traveler-header:hover { background: #F8E892; }
+.traveler-group.expanded .traveler-header {
+  border-bottom-color: var(--border);
+  background: #F8E892;
+}
+
+.traveler-code {
+  font-size: 11px; font-weight: 800; letter-spacing: .9px;
+  background: var(--coral); color: white;
+  border: none;
+  padding: 4px 10px; border-radius: 6px;
+  white-space: nowrap; flex-shrink: 0;
+}
+
+.traveler-info { flex: 1; min-width: 0; }
+.traveler-name { font-weight: 700; font-size: 16.5px; color: var(--text-primary); }
+.traveler-meta {
+  display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap;
+  margin-top: 6px;
+}
+.traveler-dates {
+  font-size: 15px; font-weight: 600; color: #575757;
+  background: var(--warm-white); border: 1px solid var(--border);
+  padding: 2px 9px; border-radius: 5px; white-space: nowrap;
+}
+.traveler-reserva {
+  font-size: 14px; color: #575757; font-family: monospace;
+  background: var(--warm-white); border: 1px solid var(--border-light);
+  padding: 2px 8px; border-radius: 5px; white-space: nowrap;
+}
+.traveler-email { font-size: 14.5px; color: #575757; align-self: center; }
+
+.pkg-pills { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; min-width: 0; }
+.pkg-pill {
+  font-size: 12.5px; font-weight: 700; padding: 5px 12px; border-radius: 20px;
+  white-space: nowrap; display: inline-flex; align-items: center; gap: 6px;
+  max-width: 100%;
+}
+.pkg-pill.disney    { background: #FBADCE; color: #1A1410; border: 1.5px solid #F075A8; }
+.pkg-pill.universal { background: #DCFCE7; color: #1A1410; border: 1.5px solid #86EFAC; }
+.pkg-pill.otros     { background: #EDE9FE; color: #1A1410; border: 1.5px solid #C4B5FD; }
+.pill-detail {
+  font-size: 12.5px; font-weight: 500; color: #575757;
+  border-left: 1.5px solid rgba(0,0,0,0.25); padding-left: 7px; margin-left: 2px;
+}
+
+.traveler-right {
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.payment-badge {
+  font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px;
+  white-space: nowrap;
+}
+.payment-badge.urgent { background: #FEE2E2; color: #B91C1C; border: 1px solid #FCA5A5; }
+.payment-badge.soon   { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+.payment-badge.ok     { background: var(--teal-light); color: var(--teal-dark); border: 1px solid #6EE7B7; }
+.payment-badge.past   { background: var(--blush); color: var(--text-muted); }
+
+.action-btns { display: flex; gap: 5px; }
+.icon-btn {
+  width: 32px; height: 32px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: white; cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s; color: var(--text-secondary);
+}
+.icon-btn:hover { border-color: var(--coral); color: var(--coral); background: var(--blush); }
+.icon-btn.delete:hover { border-color: #F87171; color: #DC2626; background: #FFF5F5; }
+.icon-btn.archive:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+
+/* Hide action buttons when collapsed */
+.traveler-group:not(.expanded) .action-btns { display: none; }
+
+.expand-icon {
+  color: var(--text-muted); font-size: 13px;
+  transition: transform .25s ease;
+}
+.traveler-group.expanded .expand-icon { transform: rotate(180deg); }
+
+/* ── Package Cards ──────────────────────────────── */
+.packages-container { padding: 16px 20px 20px; }
+
+.package-card {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden; margin-bottom: 10px;
+}
+.package-card:last-child { margin-bottom: 0; }
+.package-card.disney-card    { border-color: #F075A8; }
+.package-card.universal-card { border-color: #86EFAC; }
+.package-card.otros-card     { border-color: #C4B5FD; }
+.package-card.otros-card .package-header { background: #EDE9FE; }
+.package-card.otros-card .package-type-label { color: #5B21B6; }
+
+.package-header {
+  padding: 10px 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.package-card.disney-card .package-header    { background: #FBADCE; }
+.package-card.universal-card .package-header { background: #DCFCE7; }
+.package-card.disney-card .package-type-label    { color: #1A1410; }
+.package-card.universal-card .package-type-label { color: #15803D; }
+
+.package-icon { font-size: 16px; }
+.package-type-label { font-size: 12px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; }
+.package-res-code {
+  margin-left: auto; font-size: 12.5px; font-weight: 600;
+  color: #575757; background: rgba(255,255,255,.7);
+  padding: 2px 9px; border-radius: 5px;
+}
+
+.package-body { padding: 14px 16px; }
+.package-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 600px) { .package-grid { grid-template-columns: 1fr 1fr; } }
+.pkg-field label { font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: #575757; display: block; margin-bottom: 4px; }
+.pkg-field span { font-size: 16px; font-weight: 500; color: #575757; }
+.pkg-field .price    { font-size: 18px; font-weight: 700; color: var(--coral); }
+.pkg-field .comision { font-size: 18px; font-weight: 700; color: #2E8070; }
+.pkg-field .payment-date { font-size: 16px; font-weight: 600; color: #575757; }
+.pkg-field .payment-date.urgent { color: #E53E3E; }
+.pkg-field .payment-date.soon { color: var(--gold); }
+.pkg-field .payment-date.ok { color: var(--teal); }
+
+.package-extras {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px solid var(--border-light);
+}
+.extra-tag {
+  font-size: 11px; padding: 3px 10px; border-radius: 20px;
+  background: var(--gold-light); color: #7D5A12;
+  border: 1px solid #EDD48E;
+}
+.extra-tag.reminder { background: var(--teal-light); color: var(--teal-dark); border-color: #9FCFC8; }
+
+.package-notes {
+  margin-top: 10px; padding: 9px 12px;
+  background: #FFFBEB; border: 1px solid #FCD34D;
+  border-radius: var(--radius-sm);
+  font-size: 12px; color: #92681A;
+  display: flex; gap: 6px; align-items: flex-start;
+}
+
+/* ── Event warning toggle ─────────────────────── */
+.event-warning-row {
+  margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid var(--border-light);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.event-warn-btn {
+  font-family: var(--font-body); font-size: 12.5px; font-weight: 600;
+  padding: 5px 13px; border-radius: 20px; cursor: pointer;
+  border: 1.5px dashed #F4A0B5;
+  background: none; color: #A0264A;
+  transition: all .18s; display: flex; align-items: center; gap: 5px;
+}
+.event-warn-btn:hover { background: #FFF0F4; border-style: solid; }
+.event-warn-btn.active {
+  background: #FFE4EE; border: 1.5px solid #F075A8; color: #8B1A3A;
+  border-style: solid;
+}
+.event-warning-tag {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 13px; font-weight: 600; padding: 5px 13px; border-radius: 20px;
+  background: #FFE4EE; color: #8B1A3A; border: 1.5px solid #F4A0B5;
+}
+.event-warning-tag select {
+  font-family: var(--font-body); font-size: 12.5px; font-weight: 600;
+  border: none; background: none; color: #8B1A3A; cursor: pointer;
+  padding: 0 2px; outline: none;
+}
+
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  color: var(--text-muted);
+}
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state p { font-size: 15px; color: var(--text-secondary); }
+
+/* ── Modal ──────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(44,36,32,.5);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: white; border-radius: var(--radius-xl);
+  width: 100%; max-width: 640px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn .25s ease;
+}
+@keyframes modalIn { from { opacity: 0; transform: translateY(20px) scale(.97); } to { opacity: 1; transform: none; } }
+
+.modal-header {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; background: white; z-index: 1;
+}
+.modal-title { font-family: var(--font-display); font-size: 20px; font-weight: 600; }
+.modal-close {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid var(--border); background: none;
+  cursor: pointer; font-size: 16px; color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.modal-close:hover { background: var(--blush); color: var(--coral); border-color: var(--rose); }
+
+.modal-body { padding: 24px 28px; }
+.modal-footer {
+  padding: 16px 28px;
+  border-top: 1px solid var(--border-light);
+  display: flex; justify-content: flex-end; gap: 10px;
+}
+
+/* Form */
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.form-row.full { grid-template-columns: 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label {
+  font-size: 11px; font-weight: 600; letter-spacing: .6px;
+  text-transform: uppercase; color: var(--text-secondary);
+}
+.form-group input, .form-group select, .form-group textarea {
+  padding: 9px 12px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 14px;
+  background: var(--warm-white); color: var(--text-primary);
+  transition: border-color .2s;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none; border-color: var(--coral);
+}
+.form-group textarea { resize: vertical; min-height: 70px; }
+
+.section-divider {
+  border: none; border-top: 1.5px solid var(--border);
+  margin: 20px 0 16px;
+}
+.section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--text-secondary);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.add-pkg-btn {
+  width: 100%; padding: 10px;
+  border: 1.5px dashed var(--rose); border-radius: var(--radius-sm);
+  background: none; cursor: pointer; color: var(--coral);
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  transition: all .15s;
+}
+.add-pkg-btn:hover { background: var(--blush); border-color: var(--coral); }
+
+.pkg-form-block {
+  background: var(--warm-white);
+  border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 16px; margin-bottom: 12px; position: relative;
+}
+.pkg-form-remove {
+  position: absolute; top: 12px; right: 12px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-muted); font-size: 15px;
+  transition: color .15s;
+}
+.pkg-form-remove:hover { color: var(--coral); }
+
+/* Confirm Modal */
+.confirm-modal { max-width: 380px; text-align: center; }
+.confirm-icon { font-size: 40px; margin-bottom: 12px; }
+.confirm-msg { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+/* ── Firebase Config Modal ──────────────────────── */
+.firebase-notice {
+  background: var(--gold-light);
+  border: 1px solid #EDD48E;
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  font-size: 13px; color: #7D5A12;
+  display: flex; gap: 10px;
+}
+.firebase-steps { margin: 10px 0 0; padding-left: 16px; }
+.firebase-steps li { margin-bottom: 4px; }
+
+/* ── Responsive ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .header { padding: 0 16px; }
+  .main { padding: 16px 14px; }
+  .stats-bar { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .traveler-right { gap: 6px; }
+  .package-grid { grid-template-columns: 1fr 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  .action-btns .icon-btn { width: 28px; height: 28px; }
+  .header-title { display: none; }
+  .controls { gap: 8px; }
+}
+@media (max-width: 480px) {
+  .stats-bar { grid-template-columns: 1fr 1fr; }
+  .package-grid { grid-template-columns: 1fr; }
+  .traveler-right { flex-direction: column; align-items: flex-end; gap: 4px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════ LOGIN ═══════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">✨</div>
+    <h1>Armo Tu Viaje Mágico</h1>
+    <p>Ingresá tu contraseña para acceder al panel</p>
+    <input type="password" id="login-pwd" class="login-input" placeholder="Contraseña" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Ingresar</button>
+    <div class="login-error" id="login-error">Contraseña incorrecta. Intentá de nuevo.</div>
+  </div>
+</div>
+
+<!-- ═══════ APP ═══════ -->
+<div id="app">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-brand">
+      <div class="header-icon">🏰</div>
+      <div>
+        <div class="header-title">Armo Tu Viaje Mágico</div>
+        <div class="header-sub">Panel de viajeros</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" onclick="showFirebaseConfig()" title="Configurar Firebase">⚙️</button>
+      <button class="btn-primary" onclick="openAddTraveler()">+ Nuevo viajero</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- Alerts -->
+    <div class="alerts-panel">
+      <div class="alerts-header">
+        <span style="font-size:16px;">🔔</span>
+        <span class="alerts-title">Alertas activas</span>
+        <span class="alerts-count" id="alerts-count">0</span>
+      </div>
+      <div class="alerts-grid" id="alerts-grid">
+        <div class="no-alerts">✅ Sin alertas activas por ahora</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-value" id="stat-active">0</div>
+        <div class="stat-label">Viajeros activos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-upcoming">0</div>
+        <div class="stat-label">Pagos en ≤7 días</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-payments">0</div>
+        <div class="stat-label">Con fecha de pago</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="stat-past">0</div>
+        <div class="stat-label">Pasados</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+      <div class="tabs">
+        <button class="tab active" data-tab="active" onclick="switchTab('active',this)">
+          Confirmados <span class="tab-badge" id="tab-active-count">0</span>
+        </button>
+        <button class="tab" data-tab="past" onclick="switchTab('past',this)">
+          Pasados <span class="tab-badge" id="tab-past-count">0</span>
+        </button>
+      </div>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Buscar viajero..." id="search-input" oninput="renderTravelers()">
+      </div>
+      <select class="filter-select" id="filter-dest" onchange="renderTravelers()">
+        <option value="">Todos los destinos</option>
+        <option value="disney">🏰 Disney</option>
+        <option value="universal">🎡 Universal</option>
+        <option value="otros">📦 Otros</option>
+      </select>
+    </div>
+
+    <!-- List -->
+    <div class="travelers-list" id="travelers-list">
+      <div class="empty-state">
+        <div class="icon">🧳</div>
+        <p>Cargando viajeros...</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ═══════ MODAL: Agregar/Editar viajero ═══════ -->
+<div class="modal-overlay" id="traveler-modal">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Nuevo viajero</div>
+      <button class="modal-close" onclick="closeModal('traveler-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre completo *</label>
+          <input type="text" id="f-name" placeholder="Ej: María González">
+        </div>
+        <div class="form-group">
+          <label>Código interno</label>
+          <input type="text" id="f-code" placeholder="Ej: V087">
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="f-email" placeholder="viajero@email.com">
+        </div>
+      </div>
+      <div class="form-row full">
+        <div class="form-group">
+          <label>Notas / Recordatorios</label>
+          <textarea id="f-notes" placeholder="Ej: Avisar si hay evento Halloween..."></textarea>
+        </div>
+      </div>
+
+      <hr class="section-divider">
+      <div class="section-label">Paquetes</div>
+
+      <div id="packages-forms"></div>
+      <button class="add-pkg-btn" onclick="addPkgForm()">+ Agregar paquete</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('traveler-modal')">Cancelar</button>
+      <button class="btn-primary" onclick="saveTraveler()">💾 Guardar viajero</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: Confirmar eliminación ═══════ -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal confirm-modal">
+    <div class="modal-body" style="padding:36px 28px 24px">
+      <div class="confirm-icon">🗑️</div>
+      <div class="modal-title" style="margin-bottom:10px" id="confirm-title">¿Eliminar este elemento?</div>
+      <div class="confirm-msg" id="confirm-msg">Esta acción no se puede deshacer.</div>
+    </div>
+    <div class="modal-footer" style="justify-content:center">
+      <button class="btn-secondary" onclick="closeModal('confirm-modal')">Cancelar</button>
+      <button class="btn-primary" id="confirm-btn" style="background:linear-gradient(135deg,#FC8181,#E53E3E)">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ MODAL: Firebase Config ═══════ -->
+<div class="modal-overlay" id="firebase-modal">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-header">
+      <div class="modal-title">⚙️ Configurar Firebase</div>
+      <button class="modal-close" onclick="closeModal('firebase-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="firebase-notice">
+        <span style="font-size:18px">🔥</span>
+        <div>
+          <strong>Necesitás configurar Firebase para usar la app completa.</strong>
+          <ol class="firebase-steps">
+            <li>Ingresá a <strong>console.firebase.google.com</strong></li>
+            <li>Creá un proyecto nuevo (ej: "ArmoTuViajeMagico")</li>
+            <li>Andá a <strong>Configuración del proyecto → General → Tus apps → Web</strong></li>
+            <li>Registrá la app y copiá el <code>firebaseConfig</code></li>
+            <li>En <strong>Firestore Database</strong>, creá la base de datos en modo de prueba</li>
+            <li>Pegá los datos acá abajo y reemplazá en el código HTML</li>
+          </ol>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>API Key</label>
+          <input type="text" id="fc-apikey" placeholder="AIzaSy...">
+        </div>
+        <div class="form-group">
+          <label>Project ID</label>
+          <input type="text" id="fc-projectid" placeholder="mi-proyecto-id">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Auth Domain</label>
+          <input type="text" id="fc-authdomain" placeholder="mi-proyecto.firebaseapp.com">
+        </div>
+        <div class="form-group">
+          <label>App ID</label>
+          <input type="text" id="fc-appid" placeholder="1:123456:web:abc...">
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);margin-top:8px">Los datos quedarán guardados en tu navegador y el código HTML mostrará cómo reemplazarlos de forma permanente.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="closeModal('firebase-modal')">Cerrar</button>
+      <button class="btn-primary" onclick="saveFirebaseConfig()">Guardar y conectar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// DATA & STATE
+// ═══════════════════════════════════════════════════════════
+const PASSWORD = "sarasa123";
+const LS_AUTH = "atvm_auth";
+const LS_LOCAL = "atvm_local_travelers";
+const LS_DISMISSED = "atvm_dismissed_alerts";
+const LS_FC = "atvm_firebase_config";
+
+let currentTab = "active";
+let editingId = null;
+let pkgCount = 0;
+
+// Local state (syncs to Firestore when available)
+let travelers = [];
+let dismissedAlerts = new Set(JSON.parse(localStorage.getItem(LS_DISMISSED) || "[]"));
+
+// ── Seed data from PDF ───────────────────────────
+const SEED_DATA = [
+  {
+    id:"V087", code:"V087", name:"Martin Moreira", email:"sheril.juji96@gmail.com",
+    notes:"3 de Julio 2026 → Señaron $200, Restan $5.504,24",
+    packages:[{ type:"disney", dates:"01/09/26 - 06/09/26", checkin:"2026-09-01", checkout:"2026-09-06", reserva:"39255937", precio:5704.24, payBefore:"2026-08-02", extras:"Seña $200 abonada" }]
+  },
+  {
+    id:"V094", code:"V094", name:"Maria De Las Mercedes Fernandez", email:"maria26mercedes@gmail.com",
+    notes:"",
+    packages:[{ type:"disney", dates:"15/09 - 23/09", checkin:"2026-09-15", checkout:"2026-09-23", reserva:"41165657", precio:4407.46, payBefore:"2026-08-16", extras:"" }]
+  },
+  {
+    id:"V0941", code:"V0941", name:"Sofia Micaela Rodriguez", email:"maria26mercedes@gmail.com",
+    notes:"",
+    packages:[{ type:"disney", dates:"15/09 - 23/09", checkin:"2026-09-15", checkout:"2026-09-23", reserva:"41165839", precio:4254.23, payBefore:"2026-08-16", extras:"" }]
+  },
+  {
+    id:"V095", code:"V095", name:"Milena Quiroz", email:"milenaquiroz109@gmail.com",
+    notes:"Avisar si hay evento Disney. 20 de Octubre se habilitan sus reservas para Dining.",
+    packages:[
+      { type:"disney", dates:"19/12 - 25/12", checkin:"2026-12-19", checkout:"2026-12-25", reserva:"41201995", precio:23576.28, payBefore:"2026-11-19", extras:"" },
+      { type:"universal", dates:"25/12 - 30/12", checkin:"2026-12-25", checkout:"2026-12-30", reserva:"E97904U2", precio:2965.37, payBefore:"2026-11-10", extras:"" }
+    ]
+  },
+  {
+    id:"V096", code:"V096", name:"Zuidy Garita", email:"zuidy92@gmail.com",
+    notes:"7/5 Lightning Lane — Avisar",
+    packages:[{ type:"disney", dates:"14/05 - 18/05", checkin:"2026-05-14", checkout:"2026-05-18", reserva:"41261011", precio:2250.40, payBefore:"2026-04-14", extras:"Lightning Lane: 7 may" }]
+  },
+  {
+    id:"V097", code:"V097", name:"Marieliza Hernandez", email:"marieliza.moran@hotmail.com",
+    notes:"Avisar días que hay eventos de Halloween para no chocar con Magic",
+    packages:[{ type:"disney", dates:"12/10 - 18/10", checkin:"2026-10-12", checkout:"2026-10-18", reserva:"41262811", precio:2784.44, payBefore:"2026-09-12", extras:"" }]
+  },
+  {
+    id:"V098", code:"V098", name:"Maria Maldonado", email:"mariasolangel843@gmail.com",
+    notes:"",
+    packages:[{ type:"disney", dates:"05/05 - 07/05", checkin:"2026-05-05", checkout:"2026-05-07", reserva:"18538632", precio:1562.73, payBefore:"2026-04-05", extras:"" }]
+  },
+  {
+    id:"V099", code:"V099", name:"Alejandra Cortes", email:"malecodu-1996@hotmail.com",
+    notes:"8/9 Lightning Lane — Avisar",
+    packages:[{ type:"disney", dates:"15/09 - 20/09", checkin:"2026-09-15", checkout:"2026-09-20", reserva:"41449031", precio:1986.96, payBefore:"2026-08-16", extras:"Lightning Lane: 8 sep" }]
+  },
+  {
+    id:"V0100", code:"V0100", name:"Ivan Dimnik", email:"i.dimnik@hotmail.com",
+    notes:"24/8 Lightning Lane — Avisar",
+    packages:[
+      { type:"disney", dates:"31/08 - 06/09", checkin:"2026-08-31", checkout:"2026-09-06", reserva:"41551133", precio:3225.35, payBefore:"2026-08-01", extras:"Lightning Lane: 24 ago" },
+      { type:"universal", dates:"31/08 - 06/09", checkin:"2026-08-31", checkout:"2026-09-06", reserva:"G01214U2", precio:3388.84, payBefore:"2026-07-23", extras:"" }
+    ]
+  },
+  {
+    id:"V0101", code:"V0101", name:"Moira Giordan", email:"Moiragiordan02@gmail.com",
+    notes:"21/5 Lightning Lane — Avisar. Dining: 29-mar",
+    packages:[
+      { type:"disney", dates:"28/05 - 03/06", checkin:"2026-05-28", checkout:"2026-06-03", reserva:"41585277", precio:3121.72, payBefore:"2026-04-28", extras:"Lightning Lane: 21-may | Dining: 29-mar" },
+      { type:"universal", dates:"03/06 - 07/06", checkin:"2026-06-03", checkout:"2026-06-07", reserva:"73821402", precio:2540.65, payBefore:"2026-04-16", extras:"" }
+    ]
+  },
+  {
+    id:"V0102", code:"V0102", name:"Irma Cadena", email:"cari071199@gmail.com",
+    notes:"Avisar si hay evento Disney para que compren",
+    packages:[{ type:"disney", dates:"25/09 - 02/10", checkin:"2026-09-25", checkout:"2026-10-02", reserva:"41634837", precio:3935.15, payBefore:"2026-08-26", extras:"" }]
+  },
+  {
+    id:"V0103", code:"V0103", name:"Mariangel Guzman", email:"maghbankes@gmail.com",
+    notes:"Avisar días de Halloween para no chocar con Magic",
+    packages:[{ type:"disney", dates:"11/09 - 16/09", checkin:"2026-09-11", checkout:"2026-09-16", reserva:"41635325", precio:1980.87, payBefore:"2026-08-12", extras:"Extra: $179.48" }]
+  },
+  {
+    id:"V0104", code:"V0104", name:"Angelys Bilbraut", email:"bilbrautangelys@gmail.com",
+    notes:"Avisar días de Halloween para no chocar con Magic",
+    packages:[{ type:"disney", dates:"01/09 - 06/09", checkin:"2026-09-01", checkout:"2026-09-06", reserva:"41644249", precio:1780.46, payBefore:"2026-08-02", extras:"" }]
+  },
+  {
+    id:"V0105", code:"V0105", name:"Liliana Giraudo", email:"guadagiraudoo@gmail.com",
+    notes:"",
+    packages:[{ type:"universal", dates:"28/08 - 04/09", checkin:"2026-08-28", checkout:"2026-09-04", reserva:"C78314U2", precio:2546.70, payBefore:"2026-07-14", extras:"" }]
+  },
+  {
+    id:"V0106", code:"V0106", name:"Lelys", email:"lelys_04@hotmail.com",
+    notes:"Avisar días de Halloween para no chocar con Magic",
+    packages:[{ type:"disney", dates:"12/08 - 20/08", checkin:"2026-08-12", checkout:"2026-08-20", reserva:"41744973", precio:4289.38, payBefore:"2026-07-13", extras:"Extra: $393.69" }]
+  },
+  {
+    id:"V0107", code:"V0107", name:"Antonio Veras / Mariel", email:"marielguzman1410@gmail.com",
+    notes:"Entradas Magic",
+    packages:[
+      { type:"disney", dates:"29/03 - 04/04", checkin:"2026-03-29", checkout:"2026-04-04", reserva:"73405177970468", precio:0, payBefore:"", extras:"Entradas Magic" },
+      { type:"universal", dates:"29/03 - 04/04", checkin:"2026-03-29", checkout:"2026-04-04", reserva:"30C314U2", precio:0, payBefore:"", extras:"" }
+    ]
+  },
+  {
+    id:"V0108", code:"V0108", name:"Paula Alonso", email:"paumalonsoo@gmail.com",
+    notes:"",
+    packages:[
+      { type:"disney", dates:"25/04 - 29/04", checkin:"2026-04-25", checkout:"2026-04-29", reserva:"41809205", precio:3779.54, payBefore:"", extras:"" },
+      { type:"universal", dates:"29/04 - 30/04", checkin:"2026-04-29", checkout:"2026-04-30", reserva:"E4Y314U2", precio:3429.55, payBefore:"", extras:"" }
+    ]
+  },
+  {
+    id:"V0109", code:"V0109", name:"Ramon Marcelo Vazquez", email:"Elyvgelatti29@gmail.com",
+    notes:"Avisar días de Halloween para no chocar con Magic",
+    packages:[
+      { type:"disney", dates:"29/08 - 14/09", checkin:"2026-08-29", checkout:"2026-09-14", reserva:"73411090607455", precio:0, payBefore:"", extras:"Paquete Expedia" },
+      { type:"disney", dates:"30/09 - 05/09", checkin:"2026-09-30", checkout:"2026-10-05", reserva:"41821471", precio:0, payBefore:"2026-07-31", extras:"" },
+      { type:"universal", dates:"30/09 - 05/09", checkin:"2026-09-30", checkout:"2026-10-05", reserva:"822414U2", precio:0, payBefore:"2026-07-22", extras:"" }
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════
+function doLogin() {
+  const pwd = document.getElementById('login-pwd').value;
+  if (pwd === PASSWORD) {
+    localStorage.setItem(LS_AUTH, "1");
+    document.getElementById('login-screen').classList.add('fade-out');
+    setTimeout(() => {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').classList.add('visible');
+      initApp();
+    }, 400);
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+    document.getElementById('login-pwd').style.borderColor = '#FC8181';
+  }
+}
+
+function checkAuth() {
+  if (localStorage.getItem(LS_AUTH) === "1") {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    initApp();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════
+async function initApp() {
+  await loadTravelers();
+  computeAndRenderAlerts();
+  renderTravelers();
+  updateStats();
+
+  // Auto-move to past every minute
+  setInterval(() => {
+    autoMoveToPast();
+    renderTravelers();
+    updateStats();
+  }, 60000);
+}
+
+// ═══════════════════════════════════════════════════════════
+// STORAGE: Firestore + LocalStorage fallback
+// ═══════════════════════════════════════════════════════════
+async function loadTravelers() {
+  if (window.__firebaseReady && window.__db) {
+    try {
+      const { collection, onSnapshot, query, orderBy } = window.__fbFns;
+      const q = query(collection(window.__db, "travelers"));
+      onSnapshot(q, (snap) => {
+        travelers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        if (travelers.length === 0) seedToFirestore();
+        else { renderTravelers(); computeAndRenderAlerts(); updateStats(); }
+      });
+      return;
+    } catch(e) { console.warn("Firestore error:", e); }
+  }
+  // LocalStorage fallback
+  const saved = localStorage.getItem(LS_LOCAL);
+  travelers = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(SEED_DATA));
+  saveLocal();
+  renderTravelers();
+}
+
+async function seedToFirestore() {
+  if (!window.__firebaseReady || !window.__db) return;
+  const { doc, setDoc, collection } = window.__fbFns;
+  for (const t of SEED_DATA) {
+    await setDoc(doc(window.__db, "travelers", t.id), t);
+  }
+}
+
+function saveLocal() {
+  localStorage.setItem(LS_LOCAL, JSON.stringify(travelers));
+}
+
+async function saveTravelerToDb(traveler) {
+  if (window.__firebaseReady && window.__db) {
+    const { doc, setDoc } = window.__fbFns;
+    await setDoc(doc(window.__db, "travelers", traveler.id), traveler);
+  }
+  // always update local
+  const idx = travelers.findIndex(t => t.id === traveler.id);
+  if (idx >= 0) travelers[idx] = traveler;
+  else travelers.push(traveler);
+  saveLocal();
+}
+
+async function deleteTravelerFromDb(id) {
+  if (window.__firebaseReady && window.__db) {
+    const { doc, deleteDoc } = window.__fbFns;
+    await deleteDoc(doc(window.__db, "travelers", id));
+  }
+  travelers = travelers.filter(t => t.id !== id);
+  saveLocal();
+}
+
+// ═══════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════
+function today() { return new Date(); }
+function parseDate(str) { if (!str) return null; return new Date(str + 'T00:00:00'); }
+function diffDays(d) { return Math.round((d - today()) / 86400000); }
+
+function formatDate(str) {
+  if (!str) return "—";
+  // Display as DD/MM/YYYY
+  const parts = str.split('-');
+  if (parts.length === 3) return parts[2] + '/' + parts[1] + '/' + parts[0];
+  return str;
+}
+
+function formatDateShort(str) {
+  if (!str) return '—';
+  const parts = str.split('-');
+  if (parts.length === 3) return parts[2] + '/' + parts[1];
+  return str;
+}
+
+function getPaymentStatus(payBefore) {
+  if (!payBefore) return 'ok';
+  const d = diffDays(parseDate(payBefore));
+  if (d < 0) return 'past';
+  if (d <= 3) return 'urgent';
+  if (d <= 14) return 'soon';
+  return 'ok';
+}
+
+function paymentLabel(payBefore) {
+  if (!payBefore) return '';
+  const d = diffDays(parseDate(payBefore));
+  if (d < 0) return `Vencido`;
+  if (d === 0) return `Hoy!`;
+  if (d === 1) return `Mañana`;
+  return `en ${d}d`;
+}
+
+function getEarliestCheckin(traveler) {
+  const dates = (traveler.packages || []).map(p => p.checkin).filter(Boolean).sort();
+  return dates[0] || '9999-12-31';
+}
+
+function getLatestCheckout(traveler) {
+  const dates = (traveler.packages || []).map(p => p.checkout).filter(Boolean).sort();
+  return dates[dates.length - 1] || null;
+}
+
+function isTravelerPast(traveler) {
+  if (traveler.manualPast) return true;
+  const co = getLatestCheckout(traveler);
+  if (!co) return false;
+  return parseDate(co) < today();
+}
+
+function toggleOtrosInput(select, blockId) {
+  const block = document.getElementById(blockId);
+  const customInput = block.querySelector('[data-field="type-custom"]');
+  customInput.style.display = select.value === 'otros' ? 'block' : 'none';
+  if (select.value !== 'otros') customInput.value = '';
+}
+
+function getPkgType(type) {
+  if (!type) return 'disney';
+  const t = type.toLowerCase();
+  if (t === 'universal') return 'universal';
+  if (t === 'disney') return 'disney';
+  return 'otros';
+}
+
+function pkgLabel(type) {
+  if (!type) return 'Disney';
+  const t = type.toLowerCase();
+  if (t === 'universal') return 'Universal';
+  if (t === 'disney') return 'Disney';
+  return type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+function pkgIcon(type) {
+  if (!type) return '🏰';
+  const t = type.toLowerCase();
+  if (t === 'universal') return '🎡';
+  if (t === 'disney') return '🏰';
+  return '📦';
+}
+
+function generateId() {
+  return 'T' + Date.now().toString(36).toUpperCase();
+}
+
+// ── Auto-calculate payBefore from checkin ──────────
+function computePayBefore(checkin, type) {
+  if (!checkin) return '';
+  const t = (type || '').toLowerCase();
+  if (t === 'disney') {
+    const d = new Date(checkin + 'T00:00:00');
+    d.setDate(d.getDate() - 30);
+    return d.toISOString().split('T')[0];
+  }
+  if (t === 'universal') {
+    const d = new Date(checkin + 'T00:00:00');
+    d.setDate(d.getDate() - 45);
+    return d.toISOString().split('T')[0];
+  }
+  return ''; // Otros → no aplica
+}
+
+// DD/MM/YYYY format for display (from YYYY-MM-DD string)
+function formatDateDMY(str) {
+  if (!str) return '';
+  const parts = str.split('-');
+  if (parts.length === 3) return parts[2] + '/' + parts[1] + '/' + parts[0];
+  return str;
+}
+
+// Parse DD/MM/YYYY → YYYY-MM-DD (for storage). Returns '' if invalid.
+function parseDMY(str) {
+  if (!str) return '';
+  str = str.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str; // already ISO
+  const m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (!m) return '';
+  const dd = m[1].padStart(2,'0');
+  const mm = m[2].padStart(2,'0');
+  let yy = m[3];
+  if (yy.length === 2) yy = '20' + yy;
+  return yy + '-' + mm + '-' + dd;
+}
+
+// Auto-insert slashes while typing DD/MM/YYYY
+function autoSlashDate(input) {
+  let v = input.value.replace(/[^\d]/g, '');
+  if (v.length > 2) v = v.slice(0,2) + '/' + v.slice(2);
+  if (v.length > 5) v = v.slice(0,5) + '/' + v.slice(5);
+  if (v.length > 10) v = v.slice(0,10);
+  input.value = v;
+}
+
+// Called when checkin or type changes in pkg form — only auto-fills payBefore if not manually edited
+function updatePayBeforeDisplay(blockId) {
+  const block = document.getElementById(blockId);
+  if (!block) return;
+  const checkinRaw = block.querySelector('[data-field="checkin"]')?.value || '';
+  const checkinISO = parseDMY(checkinRaw);
+  const typeVal = block.querySelector('[data-field="type"]')?.value || '';
+  const payInput = block.querySelector('[data-field="payBefore-input"]');
+  if (!payInput) return;
+  // Only auto-fill if field is empty or matches a previously auto-calculated value
+  const payDate = computePayBefore(checkinISO, typeVal);
+  if (payDate) {
+    payInput.value = formatDateDMY(payDate);
+  } else if (typeVal === 'otros') {
+    if (!payInput.value) payInput.value = 'No aplica';
+  } else {
+    payInput.value = '';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// ALERTS
+// ═══════════════════════════════════════════════════════════
+function computeAlerts() {
+  const alerts = [];
+  const activeTravelers = travelers.filter(t => !isTravelerPast(t));
+
+  for (const t of activeTravelers) {
+    for (const pkg of (t.packages || [])) {
+      if (!pkg.checkin) continue;
+
+      // Payment alert — aviso solo si faltan 15 días o menos
+      if (pkg.payBefore) {
+        const d = diffDays(parseDate(pkg.payBefore));
+        if (d >= 0 && d <= 15) {
+          const aid = `${t.id}_${pkg.reserva}_pay`;
+          if (!dismissedAlerts.has(aid)) {
+            alerts.push({
+              id: aid, traveler: t.name, travelerId: t.id,
+              type: `Pago ${pkgLabel(pkg.type)}`,
+              date: pkg.payBefore, daysLeft: d,
+              alertKind: 'pay', pkgType: getPkgType(pkg.type),
+              urgency: d <= 3 ? 'urgent' : d <= 7 ? 'soon' : 'normal'
+            });
+          }
+        }
+      }
+
+      // Lightning Lane (7 days before checkin) — alert from 5 days before, stays until 1 day after llDate
+      if ((pkg.extras || '').toLowerCase().includes('lightning') || (t.notes || '').toLowerCase().includes('lightning')) {
+        const llDate = new Date(parseDate(pkg.checkin));
+        llDate.setDate(llDate.getDate() - 7);
+        const d = diffDays(llDate);
+        if (d <= 5) {
+          const aid = `${t.id}_${pkg.reserva}_ll`;
+          if (!dismissedAlerts.has(aid)) {
+            alerts.push({
+              id: aid, traveler: t.name, travelerId: t.id,
+              type: `Lightning Lane — ${pkgLabel(pkg.type)}`,
+              date: llDate.toISOString().split('T')[0], daysLeft: d,
+              alertKind: 'lightning', pkgType: getPkgType(pkg.type),
+              urgency: d <= 0 ? 'urgent' : d <= 3 ? 'soon' : 'normal'
+            });
+          }
+        }
+      }
+
+      // Dining (60 days before checkin) — alert from 5 days before, stays until 1 day after diningDate
+      if ((pkg.extras || '').toLowerCase().includes('dining') || (t.notes || '').toLowerCase().includes('dining')) {
+        const diningDate = new Date(parseDate(pkg.checkin));
+        diningDate.setDate(diningDate.getDate() - 60);
+        const d = diffDays(diningDate);
+        if (d <= 5) {
+          const aid = `${t.id}_${pkg.reserva}_dining`;
+          if (!dismissedAlerts.has(aid)) {
+            alerts.push({
+              id: aid, traveler: t.name, travelerId: t.id,
+              type: `Dining Reservations — ${pkgLabel(pkg.type)}`,
+              date: diningDate.toISOString().split('T')[0], daysLeft: d,
+              alertKind: 'dining', pkgType: getPkgType(pkg.type),
+              urgency: d <= 0 ? 'urgent' : 'soon'
+            });
+          }
+        }
+      }
+    }
+  }
+
+  return alerts.sort((a, b) => a.daysLeft - b.daysLeft);
+}
+
+function computeAndRenderAlerts() {
+  const alerts = computeAlerts();
+  const grid = document.getElementById('alerts-grid');
+  const countEl = document.getElementById('alerts-count');
+  countEl.textContent = alerts.length;
+
+  if (alerts.length === 0) {
+    grid.innerHTML = '<div class="no-alerts">✅ Sin alertas activas por ahora</div>';
+    return;
+  }
+
+  grid.innerHTML = alerts.map(a => {
+    const label = a.daysLeft < 0 ? '¡Venció!' : a.daysLeft === 0 ? '¡Hoy!' : a.daysLeft === 1 ? 'Mañana' : `En ${a.daysLeft} días`;
+
+    // Determine alert category and icon
+    const isLightning = a.alertKind === 'lightning';
+    const isDining    = a.alertKind === 'dining';
+    const isPay       = a.alertKind === 'pay';
+
+    const icon = isDining ? '🍔' : isLightning ? '⚡' : '💳';
+
+    // Card extra classes
+    let cardClass = a.urgency;
+    if (isPay)        cardClass += ' pay-alert';
+    if (isLightning)  cardClass += ' lightning';
+    if (isDining)     cardClass += ' dining';
+
+    // Badge class
+    let badgeClass = isPay ? 'pay-badge' : a.urgency;
+
+    return `
+    <div class="alert-card ${cardClass}" id="alert-${a.id}">
+      <div class="alert-icon">${icon}</div>
+      <div class="alert-body">
+        <div class="alert-name">${a.traveler}</div>
+        <div class="alert-type">${a.type} · ${formatDate(a.date)}</div>
+      </div>
+      <span class="alert-badge ${badgeClass}">${label}</span>
+      <button class="alert-dismiss" onclick="dismissAlert('${a.id}')" title="Descartar">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function dismissAlert(id) {
+  showConfirm(
+    '¿Descartar esta alerta?',
+    'No volverá a aparecer para este viajero.',
+    () => {
+      dismissedAlerts.add(id);
+      localStorage.setItem(LS_DISMISSED, JSON.stringify([...dismissedAlerts]));
+      computeAndRenderAlerts();
+    }
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// RENDER TRAVELERS
+// ═══════════════════════════════════════════════════════════
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderTravelers();
+  updateStats();
+}
+
+function renderTravelers() {
+  const list = document.getElementById('travelers-list');
+  const search = (document.getElementById('search-input')?.value || '').toLowerCase();
+  const destFilter = document.getElementById('filter-dest')?.value || '';
+
+  const isPast = currentTab === 'past';
+  let filtered = travelers.filter(t => isTravelerPast(t) === isPast);
+
+  if (search) filtered = filtered.filter(t => t.name.toLowerCase().includes(search) || (t.code||'').toLowerCase().includes(search));
+  if (destFilter) filtered = filtered.filter(t => (t.packages||[]).some(p => getPkgType(p.type) === destFilter));
+
+  // Sort by earliest checkin
+  filtered.sort((a, b) => getEarliestCheckin(a).localeCompare(getEarliestCheckin(b)));
+
+  document.getElementById('tab-active-count').textContent = travelers.filter(t => !isTravelerPast(t)).length;
+  document.getElementById('tab-past-count').textContent = travelers.filter(t => isTravelerPast(t)).length;
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">🧳</div><p>${isPast ? 'No hay viajeros pasados' : 'No hay viajeros activos'}</p></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(t => renderTravelerCard(t)).join('');
+}
+
+function renderTravelerCard(t) {
+  const pkgs = t.packages || [];
+  const isExpanded = t._expanded || false;
+
+  // Find most urgent payment
+  let worstStatus = 'ok';
+  let worstLabel = '';
+  for (const p of pkgs) {
+    const s = getPaymentStatus(p.payBefore);
+    const l = paymentLabel(p.payBefore);
+    if (s === 'urgent') { worstStatus = 'urgent'; worstLabel = `⚠ Pago ${l}`; break; }
+    if (s === 'soon' && worstStatus !== 'urgent') { worstStatus = 'soon'; worstLabel = `Pago ${l}`; }
+    if (s === 'ok' && worstStatus === 'ok' && l) { worstLabel = `Pago ${l}`; }
+  }
+
+  // Pills — stacked vertically (one per package)
+  const pkgPills = pkgs.map(p => {
+    const pt = p.type ? p.type.toLowerCase() : '';
+    const pillClass = ['disney','universal'].includes(pt) ? pt : 'otros';
+    // Show dates inline on each pill
+    const dateStr = p.checkin && p.checkout
+      ? `${formatDateShort(p.checkin)} → ${formatDateShort(p.checkout)}`
+      : (p.dates || '');
+    const resStr = p.reserva ? ` · #${p.reserva}` : '';
+    return `<span class="pkg-pill ${pillClass}">${pkgIcon(p.type)} ${pkgLabel(p.type)}<span class="pill-detail">${dateStr}${resStr}</span></span>`;
+  }).join('');
+
+  const packagesHtml = isExpanded ? `
+    <div class="packages-container">
+      ${pkgs.map(p => renderPackageCard(p, t.id)).join('')}
+    </div>` : '';
+
+  const isPast = isTravelerPast(t);
+
+  return `
+  <div class="traveler-group ${isExpanded ? 'expanded' : ''}" id="tg-${t.id}">
+    <div class="traveler-header" onclick="toggleExpand('${t.id}')">
+      <span class="traveler-code">${t.code || '—'}</span>
+      <div class="traveler-info">
+        <div class="traveler-name">${t.name}</div>
+        <div class="traveler-meta">
+          <div class="pkg-pills">${pkgPills}</div>
+          ${t.email ? `<span class="traveler-email">${t.email}</span>` : ''}
+        </div>
+      </div>
+      <div class="traveler-right">
+        ${worstLabel && !isPast ? `<span class="payment-badge ${worstStatus}">${worstLabel}</span>` : ''}
+        <div class="action-btns" onclick="event.stopPropagation()">
+          <button class="icon-btn" onclick="openEditTraveler('${t.id}')" title="Editar">✏️</button>
+          ${!isPast ? `<button class="icon-btn archive" onclick="archiveTraveler('${t.id}')" title="Mover a pasados">📁</button>` : ''}
+          <button class="icon-btn delete" onclick="confirmDeleteTraveler('${t.id}')" title="Eliminar">🗑️</button>
+        </div>
+        <span class="expand-icon">▼</span>
+      </div>
+    </div>
+    ${packagesHtml}
+  </div>`;
+}
+
+function renderPackageCard(p, travelerId) {
+  const t = p.type ? p.type.toLowerCase() : '';
+  const isDisney    = t === 'disney';
+  const isUniversal = t === 'universal';
+  const cardClass   = isDisney ? 'disney-card' : isUniversal ? 'universal-card' : 'otros-card';
+  const label = paymentLabel(p.payBefore);
+  const status = getPaymentStatus(p.payBefore);
+  const extras = (p.extras || '').split('|').map(s => s.trim()).filter(Boolean);
+  const pkgId = `${travelerId}_${p.reserva || p.type}`;
+  const eventWarn = p.eventWarning || '';
+
+  const eventWarnHtml = eventWarn
+    ? `<div class="event-warning-row">
+        <span class="event-warning-tag">🎃 Avisar si hay eventos: <strong>${eventWarn.charAt(0).toUpperCase()+eventWarn.slice(1)}</strong></span>
+      </div>`
+    : '';
+
+  return `
+  <div class="package-card ${cardClass}" id="pkg-card-${pkgId}">
+    <div class="package-header">
+      <span class="package-icon">${pkgIcon(p.type)}</span>
+      <span class="package-type-label">${pkgLabel(p.type)}</span>
+      <span class="package-res-code">${p.reserva || '—'}</span>
+    </div>
+    <div class="package-body">
+      <div class="package-grid">
+        <div class="pkg-field">
+          <label>Fechas de viaje</label>
+          <span>${p.dates || (formatDate(p.checkin) + ' → ' + formatDate(p.checkout))}</span>
+        </div>
+        <div class="pkg-field">
+          <label>Valor total</label>
+          <span class="price">${p.precio ? '$' + Number(p.precio).toLocaleString('es-AR', {minimumFractionDigits:2}) : '—'}</span>
+        </div>
+        <div class="pkg-field">
+          <label>Comisión</label>
+          <span class="comision">${p.comision ? '$' + Number(p.comision).toLocaleString('es-AR', {minimumFractionDigits:2}) : '—'}</span>
+        </div>
+        <div class="pkg-field">
+          <label>Pagar antes de</label>
+          <span class="payment-date ${status}">${p.payBefore ? formatDate(p.payBefore) + (label ? ` (${label})` : '') : '—'}</span>
+        </div>
+      </div>
+      ${extras.length > 0 ? `
+      <div class="package-extras">
+        ${extras.map(e => `<span class="extra-tag reminder">${e}</span>`).join('')}
+      </div>` : ''}
+      ${eventWarnHtml}
+    </div>
+  </div>`;
+}
+
+
+function toggleExpand(id) {
+  const t = travelers.find(x => x.id === id);
+  if (!t) return;
+  t._expanded = !t._expanded;
+  const card = document.getElementById('tg-' + id);
+  if (!card) return;
+  card.classList.toggle('expanded', t._expanded);
+  const pkgsContainer = card.querySelector('.packages-container');
+  if (t._expanded && !pkgsContainer) {
+    card.querySelector('.traveler-header').insertAdjacentHTML('afterend',
+      `<div class="packages-container">${(t.packages||[]).map(p => renderPackageCard(p, t.id)).join('')}</div>`
+    );
+  } else if (!t._expanded && pkgsContainer) {
+    pkgsContainer.remove();
+  }
+}
+
+function autoMoveToPast() {
+  // Handled by isTravelerPast() checking dates dynamically — no action needed
+}
+
+function archiveTraveler(id) {
+  showConfirm('¿Mover a Pasados?', 'El viajero se moverá a la pestaña de pasados.', async () => {
+    const t = travelers.find(x => x.id === id);
+    if (!t) return;
+    t.manualPast = true;
+    await saveTravelerToDb(t);
+    renderTravelers();
+    updateStats();
+  });
+}
+
+function confirmDeleteTraveler(id) {
+  const t = travelers.find(x => x.id === id);
+  if (!t) return;
+  showConfirm(`¿Eliminar a ${t.name}?`, 'Esta acción no se puede deshacer.', async () => {
+    await deleteTravelerFromDb(id);
+    renderTravelers();
+    updateStats();
+    computeAndRenderAlerts();
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// STATS
+// ═══════════════════════════════════════════════════════════
+function updateStats() {
+  const active = travelers.filter(t => !isTravelerPast(t));
+  const past = travelers.filter(t => isTravelerPast(t));
+  const upcoming = active.filter(t => (t.packages||[]).some(p => {
+    if (!p.payBefore) return false;
+    const d = diffDays(parseDate(p.payBefore));
+    return d >= 0 && d <= 7;
+  }));
+  const withPayment = active.filter(t => (t.packages||[]).some(p => p.payBefore));
+
+  document.getElementById('stat-active').textContent = active.length;
+  document.getElementById('stat-upcoming').textContent = upcoming.length;
+  document.getElementById('stat-payments').textContent = withPayment.length;
+  document.getElementById('stat-past').textContent = past.length;
+}
+
+// ═══════════════════════════════════════════════════════════
+// FORM: ADD / EDIT TRAVELER
+// ═══════════════════════════════════════════════════════════
+let pkgForms = [];
+
+function openAddTraveler() {
+  editingId = null;
+  pkgForms = [];
+  pkgCount = 0;
+  document.getElementById('modal-title').textContent = 'Nuevo viajero';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-code').value = autoNextCode();
+  document.getElementById('f-email').value = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('packages-forms').innerHTML = '';
+  addPkgForm();
+  openModal('traveler-modal');
+}
+
+function autoNextCode() {
+  const codes = travelers.map(t => t.code || '').filter(c => c.startsWith('V0'));
+  const nums = codes.map(c => parseInt(c.replace(/[^0-9]/g,''))).filter(n => !isNaN(n));
+  const max = nums.length ? Math.max(...nums) : 107;
+  return 'V0' + (max + 1);
+}
+
+function openEditTraveler(id) {
+  const t = travelers.find(x => x.id === id);
+  if (!t) return;
+  editingId = id;
+  pkgForms = [];
+  pkgCount = 0;
+  document.getElementById('modal-title').textContent = 'Editar viajero';
+  document.getElementById('f-name').value = t.name || '';
+  document.getElementById('f-code').value = t.code || '';
+  document.getElementById('f-email').value = t.email || '';
+  document.getElementById('f-notes').value = t.notes || '';
+  document.getElementById('packages-forms').innerHTML = '';
+  (t.packages || []).forEach(p => addPkgForm(p));
+  if ((t.packages || []).length === 0) addPkgForm();
+  openModal('traveler-modal');
+}
+
+function addPkgForm(pkg) {
+  const idx = pkgCount++;
+  const id = `pkg-${idx}`;
+  pkgForms.push(id);
+  const c = pkg || {};
+  const isOtros = c.type && !['disney','universal'].includes(c.type) ? c.type : '';
+  // Compute payBefore display for the auto-calculated field
+  const autoPayBefore = computePayBefore(c.checkin, c.type);
+  const payBeforeDisplay = autoPayBefore ? formatDateDMY(autoPayBefore) : (isOtros ? 'No aplica' : '—');
+
+  const html = `
+  <div class="pkg-form-block" id="${id}">
+    <button class="pkg-form-remove" onclick="removePkgForm('${id}')">✕</button>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tipo de paquete</label>
+        <select data-field="type" onchange="toggleOtrosInput(this, '${id}'); updatePayBeforeDisplay('${id}')">
+          <option value="disney"    ${c.type==='disney' || !c.type ?'selected':''}>🏰 Disney</option>
+          <option value="universal" ${c.type==='universal'?'selected':''}>🎡 Universal</option>
+          <option value="otros"     ${isOtros ?'selected':''}>📦 Otros</option>
+        </select>
+        <input type="text" data-field="type-custom" placeholder="Ej: Paquete Expedia, Entradas..."
+          value="${isOtros}"
+          style="margin-top:6px; display:${isOtros ? 'block' : 'none'}">
+      </div>
+      <div class="form-group">
+        <label>Código de reserva</label>
+        <input type="text" data-field="reserva" value="${c.reserva||''}" placeholder="Ej: 41585277">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Check-in</label>
+        <input type="text" data-field="checkin" value="${c.checkin ? formatDateDMY(c.checkin) : ''}" placeholder="DD/MM/YYYY" maxlength="10" oninput="autoSlashDate(this); updatePayBeforeDisplay('${id}')">
+      </div>
+      <div class="form-group">
+        <label>Check-out</label>
+        <input type="text" data-field="checkout" value="${c.checkout ? formatDateDMY(c.checkout) : ''}" placeholder="DD/MM/YYYY" maxlength="10" oninput="autoSlashDate(this)">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Precio total (USD)</label>
+        <input type="number" data-field="precio" value="${c.precio||''}" placeholder="0.00" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>Comisión</label>
+        <input type="number" data-field="comision" value="${c.comision||''}" placeholder="0.00" step="0.01">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Pagar antes de <span style="font-size:11px;color:var(--text-muted)">(auto · editable)</span></label>
+        <input type="text" data-field="payBefore-input" value="${payBeforeDisplay !== '—' ? payBeforeDisplay : ''}" placeholder="DD/MM/YYYY o No aplica" maxlength="10" oninput="autoSlashDate(this)">
+      </div>
+      <div class="form-group"></div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label>Extras / Recordatorios</label>
+        <input type="text" data-field="extras" value="${c.extras||''}" placeholder="Ej: Lightning Lane: 21-may | Dining: 29-mar">
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label>⚠ Avisar por evento especial</label>
+        <select data-field="eventWarning">
+          <option value=""       ${!c.eventWarning?'selected':''}>— Sin recordatorio —</option>
+          <option value="halloween" ${c.eventWarning==='halloween'?'selected':''}>🎃 Halloween</option>
+          <option value="navidad"   ${c.eventWarning==='navidad'?'selected':''}>🎄 Navidad</option>
+          <option value="otros"     ${c.eventWarning==='otros'?'selected':''}>🎉 Otros</option>
+        </select>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('packages-forms').insertAdjacentHTML('beforeend', html);
+}
+
+function removePkgForm(id) {
+  document.getElementById(id)?.remove();
+  pkgForms = pkgForms.filter(x => x !== id);
+}
+
+async function saveTraveler() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { alert('El nombre es obligatorio'); return; }
+
+  // Collect packages
+  const packages = [];
+  document.querySelectorAll('#packages-forms .pkg-form-block').forEach(block => {
+    const get = (f) => block.querySelector(`[data-field="${f}"]`)?.value || '';
+    const ciRaw = get('checkin');
+    const coRaw = get('checkout');
+    const ci = parseDMY(ciRaw);
+    const co = parseDMY(coRaw);
+    const rawType = get('type');
+    const finalType = rawType === 'otros' ? (get('type-custom') || 'Otros') : rawType;
+    // payBefore: use manual input if provided, else auto-calculate
+    const payInputRaw = get('payBefore-input').trim();
+    let payBefore = '';
+    if (payInputRaw && payInputRaw.toLowerCase() !== 'no aplica' && payInputRaw !== '—') {
+      payBefore = parseDMY(payInputRaw) || '';
+    }
+    if (!payBefore && finalType.toLowerCase() !== 'otros') {
+      payBefore = computePayBefore(ci, finalType);
+    }
+    packages.push({
+      type: finalType,
+      reserva: get('reserva'),
+      checkin: ci, checkout: co,
+      dates: ci && co ? `${formatDateDMY(ci)} - ${formatDateDMY(co)}` : '',
+      precio: parseFloat(get('precio')) || 0,
+      comision: parseFloat(get('comision')) || 0,
+      payBefore: payBefore,
+      extras: get('extras'),
+      eventWarning: get('eventWarning') || ''
+    });
+  });
+
+  const id = editingId || generateId();
+  const traveler = {
+    id, name,
+    code: document.getElementById('f-code').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+    notes: document.getElementById('f-notes').value.trim(),
+    packages,
+    manualPast: editingId ? (travelers.find(t=>t.id===editingId)?.manualPast || false) : false,
+    _expanded: false
+  };
+
+  await saveTravelerToDb(traveler);
+  closeModal('traveler-modal');
+  renderTravelers();
+  updateStats();
+  computeAndRenderAlerts();
+}
+
+// ═══════════════════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function showConfirm(title, msg, onConfirm) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-msg').textContent = msg;
+  const btn = document.getElementById('confirm-btn');
+  btn.onclick = () => { closeModal('confirm-modal'); onConfirm(); };
+  openModal('confirm-modal');
+}
+
+function showFirebaseConfig() { openModal('firebase-modal'); }
+
+function saveFirebaseConfig() {
+  const config = {
+    apiKey: document.getElementById('fc-apikey').value.trim(),
+    projectId: document.getElementById('fc-projectid').value.trim(),
+    authDomain: document.getElementById('fc-authdomain').value.trim(),
+    appId: document.getElementById('fc-appid').value.trim(),
+    storageBucket: document.getElementById('fc-projectid').value.trim() + '.appspot.com',
+    messagingSenderId: ''
+  };
+  localStorage.setItem(LS_FC, JSON.stringify(config));
+  closeModal('firebase-modal');
+  alert('✅ Configuración guardada. Recargá la página y reemplazá los valores en el HTML para persistencia permanente.');
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════════════════
+checkAuth();
+</script>
+</body>
+</html>
